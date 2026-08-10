@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in | ApexVoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <!--
+    Deliberately self-contained: index.css and app.js sit behind the auth gate,
+    so this page carries its own styles and script and pulls nothing from the
+    protected side of the portal.
+  -->
+  <style>
+    :root {
+      --bg-main: #0b0a15;
+      --bg-card: rgba(19, 17, 43, 0.65);
+      --border-light: rgba(255, 255, 255, 0.06);
+      --primary: #9d4edd;
+      --primary-hover: #b5179e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --color-danger: #ef4444;
+      --color-danger-bg: rgba(239, 68, 68, 0.1);
+      --color-warning: #f59e0b;
+      --color-warning-bg: rgba(245, 158, 11, 0.1);
+      --font-display: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(157, 78, 221, 0.18), transparent 45%),
+        radial-gradient(circle at 80% 85%, rgba(58, 12, 163, 0.22), transparent 50%),
+        var(--bg-main);
+      font-family: var(--font-body);
+      color: var(--text-main);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 36px 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: 20px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--primary), #3a0ca3);
+      box-shadow: 0 0 15px rgba(157, 78, 221, 0.35);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input[type="password"]:focus {
+      border-color: rgba(157, 78, 221, 0.6);
+      box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.15);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 18px;
+      padding: 12px 16px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message.visible { display: block; }
+
+    .message.error {
+      color: #fca5a5;
+      background: var(--color-danger-bg);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .message.notice {
+      color: #fcd34d;
+      background: var(--color-warning-bg);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .footnote {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border-light);
+      font-size: 12px;
+      line-height: 1.6;
+      color: #6b7280;
+    }
+
+    .footnote a { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <main class="login-card">
+    <div class="brand">
+      <div class="brand-mark">⚡</div>
+      <span class="brand-name">ApexVoice</span>
+    </div>
+
+    <h1>Operator sign-in</h1>
+    <p class="subtitle">This portal holds your prospect list and campaign scripts. Enter your portal password to continue.</p>
+
+    <form id="login-form" autocomplete="on">
+      <label for="password">Portal password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+      <button id="submit" type="submit">Sign in</button>
+    </form>
+
+    <div id="message" class="message" role="status" aria-live="polite"></div>
+
+    <p class="footnote">
+      One password, one operator. If you have lost it, change <code>PORTAL_PASSWORD</code>
+      in the site's environment variables and redeploy &mdash; that also signs out
+      every existing session. <a href="/">Back to the main site</a>.
+    </p>
+  </main>
+
+  <script>
+    (function () {
+      var form = document.getElementById('login-form');
+      var input = document.getElementById('password');
+      var submit = document.getElementById('submit');
+      var message = document.getElementById('message');
+
+      function show(text, kind) {
+        message.textContent = text;
+        message.className = 'message visible ' + (kind || 'error');
+      }
+
+      function hide() {
+        message.textContent = '';
+        message.className = 'message';
+      }
+
+      // If the cookie is still good — e.g. the page was reached from a stale
+      // bookmark — go straight through instead of asking again. Also surfaces
+      // the "no password set" case before the operator types anything.
+      fetch('/api/portal/session', { headers: { Accept: 'application/json' } })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && data.authenticated) {
+            window.location.replace('/portal/index.html');
+          } else if (data && data.configured === false) {
+            show('No portal password is set on this site yet. Set PORTAL_PASSWORD in the Netlify environment variables and redeploy.', 'notice');
+            input.disabled = true;
+            submit.disabled = true;
+          }
+        })
+        .catch(function () { /* Offline check is advisory; the form still works. */ });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        hide();
+
+        var password = input.value;
+        if (!password) {
+          show('Enter your portal password.');
+          return;
+        }
+
+        submit.disabled = true;
+        submit.textContent = 'Signing in…';
+
+        fetch('/api/portal/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: password })
+        })
+          .then(function (res) {
+            return res.json().catch(function () { return null; }).then(function (data) {
+              return { ok: res.ok, data: data };
+            });
+          })
+          .then(function (result) {
+            if (result.ok) {
+              window.location.replace('/portal/index.html');
+              return;
+            }
+            input.value = '';
+            input.focus();
+            show((result.data && result.data.error) || 'Could not sign in. Try again.');
+          })
+          .catch(function () {
+            show('Could not reach the server. Check your connection and try again.');
+          })
+          .then(function () {
+            submit.disabled = false;
+            submit.textContent = 'Sign in';
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

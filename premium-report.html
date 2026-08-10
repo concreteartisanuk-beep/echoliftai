@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Premium AI Growth Report | EchoLift AI</title>
+  <meta name="description" content="Your purchased EchoLift AI Premium Growth Report.">
+  <!-- Private deliverable: keep it out of search results. -->
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/premium-report.css">
+</head>
+<body>
+  <nav class="navbar glass no-print">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <i class="fa-solid fa-bolt-lightning text-gradient-primary"></i>
+        <span>EchoLift<span class="text-gradient-secondary"> AI</span></span>
+      </a>
+      <div class="nav-actions">
+        <a href="https://calendly.com/echoliftai/15min" target="_blank" rel="noopener" class="btn btn-primary">Book a Free Demo</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="pr-main">
+    <div class="container">
+
+      <!-- Waiting for generation to finish -->
+      <div class="glass-card pr-state" id="prLoading">
+        <div class="pr-spinner"></div>
+        <h1 style="font-family: var(--font-heading); font-size: 1.4rem; margin-bottom: 0.75rem;">Building your report</h1>
+        <p style="color: var(--text-secondary);" id="prLoadingText">Verifying your purchase…</p>
+        <p class="pr-progress">This takes a minute or two — we're writing all ten sections from scratch for your business. You can leave this page open; we'll also email your report the moment it's ready.</p>
+      </div>
+
+      <!-- The finished report -->
+      <div class="pr" id="prOutput" style="display: none;"></div>
+
+      <!-- Anything that isn't a finished report -->
+      <div class="glass-card pr-state" id="prMessage" style="display: none;">
+        <i class="fa-solid fa-circle-info pr-state-icon" id="prMessageIcon"></i>
+        <p style="color: var(--text-secondary);" id="prMessageText"></p>
+        <div class="hero-cta-group" style="justify-content: center; margin-top: 1.5rem;">
+          <a href="mailto:info@echoliftai.co.uk?subject=Premium%20Growth%20Report" class="btn btn-primary">
+            <i class="fa-solid fa-envelope"></i> Contact us
+          </a>
+          <a href="/" class="btn btn-secondary">Back to site</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="no-print" style="border-top: 1px solid var(--border-glass); padding: 3rem 0; text-align: center; margin-top: 4rem;">
+    <div class="container">
+      <p style="color: var(--text-muted); font-size: 0.8rem;">&copy; 2026 EchoLift AI Ltd. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const TOTAL_PAGES = 11;
+    const POLL_MS = 4000;
+    const MAX_POLLS = 60; // ~4 minutes before we stop and tell them to check email
+
+    const loading = document.getElementById('prLoading');
+    const loadingText = document.getElementById('prLoadingText');
+    const output = document.getElementById('prOutput');
+    const message = document.getElementById('prMessage');
+    const messageText = document.getElementById('prMessageText');
+    const messageIcon = document.getElementById('prMessageIcon');
+
+    const esc = (s) => String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+    const list = (v) => (Array.isArray(v) ? v : []);
+    const obj = (v) => (v && typeof v === 'object' ? v : {});
+
+    const showMessage = (text, icon) => {
+      loading.style.display = 'none';
+      output.style.display = 'none';
+      messageIcon.className = 'fa-solid ' + (icon || 'fa-circle-info') + ' pr-state-icon';
+      messageText.textContent = text;
+      message.style.display = 'block';
+    };
+
+    // --- Progress copy, so a two-minute wait doesn't feel like a hang ---
+    const steps = [
+      'Verifying your purchase…',
+      'Mapping your local search landscape…',
+      'Estimating your missed-call revenue impact…',
+      'Building your keyword plan…',
+      'Auditing your local SEO footprint…',
+      'Profiling the competition…',
+      'Drafting your content and social playbooks…',
+      'Writing your 90-day action plan…',
+      'Formatting your report…'
+    ];
+    let step = 0;
+    const stepTimer = setInterval(() => {
+      step = Math.min(step + 1, steps.length - 1);
+      loadingText.textContent = steps[step];
+    }, 9000);
+
+    // ---------------------------------------------------------------- render
+    const render = (data) => {
+      const r = obj(data.report);
+      const biz = data.businessName || 'your business';
+      const ref = data.reportRef || '';
+      const where = [data.industry, data.city].filter(Boolean).join(' · ');
+      const dated = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Every page carries the branding, so a printed page pulled out of the
+      // stack still says who made it and which report it belongs to.
+      const page = (n, body) => `
+        <section class="pr-page">
+          <div class="pr-page-head">
+            <span class="pr-wordmark">EchoLift<span style="color:var(--pr-accent)"> AI</span></span>
+            <span>${esc(biz)} — Premium Growth Report</span>
+          </div>
+          ${body}
+          <div class="pr-page-foot">
+            <span>${esc(ref)}</span>
+            <span>Page ${n} of ${TOTAL_PAGES}</span>
+            <span>echoliftai.co.uk</span>
+          </div>
+        </section>`;
+
+      const heading = (num, title) => `
+        <span class="pr-eyebrow">Section ${num} of 10</span>
+        <h2>${esc(title)}</h2>`;
+
+      // --- Section 2: visibility scorecard ---
+      const score = obj(r.visibilityScorecard);
+      const bands = list(score.bands).map((b) => `
+        <li class="pr-band">
+          <div class="pr-band-top"><span>${esc(b.area)}</span><span class="pr-band-score">${b.score === null || b.score === undefined ? '—' : esc(b.score) + '/100'}</span></div>
+          <div class="pr-bar"><span class="pr-bar-fill" style="width:${Math.max(0, Math.min(100, Number(b.score) || 0))}%"></span></div>
+          <p class="pr-band-verdict">${esc(b.verdict)}</p>
+        </li>`).join('');
+
+      // --- Section 3: missed-call impact ---
+      const impact = obj(r.missedCallImpact);
+
+      // --- Section 4: keyword plan ---
+      const keywords = list(r.keywordPlan).map((k) => `
+        <tr>
+          <td data-label="Keyword">${esc(k.keyword)}</td>
+          <td data-label="Intent"><span class="pr-tag">${esc(k.intent)}</span></td>
+          <td data-label="Difficulty">${esc(k.difficulty)}</td>
+          <td data-label="Est. searches">${esc(k.monthlyVolume)}</td>
+          <td data-label="Why it's winnable">${esc(k.why)}</td>
+        </tr>`).join('');
+
+      // --- Section 5: local SEO ---
+      const seo = obj(r.localSeoAudit);
+      const fixes = list(seo.priorityFixes).map((f, i) => `
+        <div class="pr-block">
+          <h4>${i + 1}. ${esc(f.area)}</h4>
+          <p>${esc(f.issue)}</p>
+          <p style="margin-bottom:0;"><strong style="color:var(--pr-accent);">Fix:</strong> ${esc(f.fix)}</p>
+        </div>`).join('');
+      const tips = list(seo.profileTips).map((t) => `<li>${esc(t)}</li>`).join('');
+
+      // --- Section 6: competitors ---
+      const rivals = list(r.competitorBreakdown).map((c) => `
+        <div class="pr-block">
+          <h4>${esc(c.competitorType)}</h4>
+          <p style="margin-bottom:0.5rem;"><strong>What they do well:</strong> ${esc(c.likelyStrength)}</p>
+          <p style="margin-bottom:0.5rem;"><strong>Where they're weak:</strong> ${esc(c.weakness)}</p>
+          <p style="margin-bottom:0;"><strong style="color:var(--pr-accent);">Your counter-move:</strong> ${esc(c.counterMove)}</p>
+        </div>`).join('');
+
+      // --- Section 7: reputation ---
+      const rep = obj(r.reputationPlan);
+      const tactics = list(rep.tactics).map((t) => `<li>${esc(t)}</li>`).join('');
+
+      // --- Section 8: content plan ---
+      const content = list(r.contentPlan).map((c) => `
+        <div class="pr-block">
+          <h4>${esc(c.title)}</h4>
+          <p style="margin-bottom:0;">${esc(c.angle)}</p>
+          <span class="pr-block-meta">${esc(c.format)} · targets <strong>${esc(c.targetKeyword)}</strong></span>
+        </div>`).join('');
+
+      // --- Section 9: social ---
+      const social = obj(r.socialPlaybook);
+      const pillars = list(social.pillars).map((p) => `
+        <div class="pr-block">
+          <h4>${esc(p.pillar)}</h4>
+          <p style="margin-bottom:0;">${esc(p.example)}</p>
+        </div>`).join('');
+
+      // --- Section 10: plan + KPIs ---
+      const phases = list(r.ninetyDayPlan).map((p) => `
+        <div class="pr-phase">
+          <div class="pr-phase-head"><strong>${esc(p.phase)}</strong><span style="color:var(--pr-ink-muted);">${esc(p.focus)}</span></div>
+          <ul class="pr-list pr-list-num">${list(p.actions).map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+          <p class="pr-phase-kpi"><strong>KPI to watch:</strong> ${esc(p.kpi)}</p>
+        </div>`).join('');
+      const kpis = list(r.kpis).map((k) => `
+        <tr>
+          <td data-label="Metric">${esc(k.metric)}</td>
+          <td data-label="Likely today">${esc(k.baseline)}</td>
+          <td data-label="90-day target">${esc(k.ninetyDayTarget)}</td>
+        </tr>`).join('');
+
+      output.innerHTML = `
+        <div class="pr-actions no-print">
+          <div class="pr-actions-meta">
+            <strong>Your report is ready.</strong><br>
+            Reference ${esc(ref)} · bookmark this page to come back to it any time.
+          </div>
+          <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" id="prPrint">
+              <i class="fa-solid fa-file-arrow-down"></i> Download PDF
+            </button>
+            <button type="button" class="btn btn-secondary" id="prCopyLink">
+              <i class="fa-solid fa-link"></i> Copy link
+            </button>
+          </div>
+        </div>
+
+        <!-- Page 1 — cover -->
+        <section class="pr-page pr-cover">
+          <div class="pr-cover-mark">EchoLift<span style="color:var(--pr-accent)"> AI</span></div>
+          <h1>Premium AI<br>Growth Report</h1>
+          <div class="pr-cover-biz">${esc(biz)}</div>
+          <div class="pr-cover-sub">${esc(where)}</div>
+          <div class="pr-cover-meta">
+            <span>Prepared ${esc(dated)}</span>
+            <span>Reference ${esc(ref)}</span>
+            <span>10 sections</span>
+          </div>
+          <div class="pr-contents">
+            <strong style="font-family:var(--font-heading); font-size:0.95rem;">What's inside</strong>
+            <ol>
+              <li>Executive summary</li>
+              <li>Growth visibility scorecard</li>
+              <li>Missed-call revenue impact</li>
+              <li>Your 8-keyword plan</li>
+              <li>Local SEO audit</li>
+              <li>Competitor breakdown</li>
+              <li>Reputation &amp; reviews plan</li>
+              <li>Content plan</li>
+              <li>Social playbook</li>
+              <li>Your 90-day action plan</li>
+            </ol>
+          </div>
+        </section>
+
+        ${page(2, `
+          ${heading(1, 'Executive summary')}
+          <p class="pr-lead">${esc(r.executiveSummary)}</p>
+          <h3>How to use this report</h3>
+          <p>Sections 2 to 9 explain where the opportunity is and why. Section 10 is the part to act on: a 90-day plan broken into three phases with the numbers to watch. If you only read one page, read that one.</p>
+        `)}
+
+        ${page(3, `
+          ${heading(2, 'Growth visibility scorecard')}
+          <div class="pr-score-hero">
+            <div class="pr-score-number">${score.overallScore === null || score.overallScore === undefined ? '—' : esc(score.overallScore)}<span>/100</span></div>
+            <p style="margin:0;">${esc(score.summary)}</p>
+          </div>
+          <ul class="pr-bands">${bands}</ul>
+          <p style="font-size:0.8rem; color:var(--pr-ink-muted); margin-top:1rem;">Scores are an analyst estimate based on your industry, location and typical performance for businesses of your size — not a measurement of your live accounts.</p>
+        `)}
+
+        ${page(4, `
+          ${heading(3, 'Missed-call revenue impact')}
+          <div class="pr-figures">
+            <div class="pr-figure">
+              <div class="pr-figure-value">${esc(impact.estimatedMonthlyLoss)}</div>
+              <div class="pr-figure-label">Estimated revenue lost each month</div>
+            </div>
+            <div class="pr-figure">
+              <div class="pr-figure-value">${esc(impact.estimatedAnnualLoss)}</div>
+              <div class="pr-figure-label">Estimated over twelve months</div>
+            </div>
+          </div>
+          <p>${esc(impact.explanation)}</p>
+          <h3>What this figure assumes</h3>
+          <ul class="pr-list">${list(impact.assumptions).map((a) => `<li>${esc(a)}</li>`).join('')}</ul>
+          <p style="font-size:0.8rem; color:var(--pr-ink-muted);">These are illustrative estimates, not a guarantee. Change the assumptions and the figure changes with them.</p>
+        `)}
+
+        ${page(5, `
+          ${heading(4, 'Your 8-keyword plan')}
+          <p>The searches below are where attention is available to you. They're chosen to be winnable rather than merely high-volume — long-tail, local, and matched to what your customers actually type.</p>
+          <table class="pr-table">
+            <thead><tr><th>Keyword</th><th>Intent</th><th>Difficulty</th><th>Est. searches / mo</th><th>Why it's winnable</th></tr></thead>
+            <tbody>${keywords}</tbody>
+          </table>
+        `)}
+
+        ${page(6, `
+          ${heading(5, 'Local SEO audit')}
+          <p>Four fixes, in the order we'd do them. Each is a one-off job that keeps paying afterwards.</p>
+          ${fixes}
+          <h3>Google Business Profile quick wins</h3>
+          <ul class="pr-list">${tips}</ul>
+        `)}
+
+        ${page(7, `
+          ${heading(6, 'Competitor breakdown')}
+          <p>Three types of rival competing for the same customers, and the gap in each one you can move into.</p>
+          ${rivals}
+        `)}
+
+        ${page(8, `
+          ${heading(7, 'Reputation & reviews plan')}
+          <p>${esc(rep.currentRisk)}</p>
+          <div class="pr-figures">
+            <div class="pr-figure">
+              <div class="pr-figure-value">${esc(rep.targetReviewCount)}</div>
+              <div class="pr-figure-label">Your 90-day review target</div>
+            </div>
+          </div>
+          <h3>How to get there</h3>
+          <ul class="pr-list pr-list-num">${tactics}</ul>
+        `)}
+
+        ${page(9, `
+          ${heading(8, 'Content plan')}
+          <p>Five pieces to publish over the next quarter, each aimed at a keyword from section 4.</p>
+          ${content}
+        `)}
+
+        ${page(10, `
+          ${heading(9, 'Social playbook')}
+          <p><strong>Sustainable cadence:</strong> ${esc(social.cadence)}</p>
+          <h3>Your three content pillars</h3>
+          ${pillars}
+          <h3>A post you can publish today</h3>
+          <div class="pr-quote">${esc(social.samplePost)}</div>
+        `)}
+
+        ${page(11, `
+          ${heading(10, 'Your 90-day action plan')}
+          ${phases}
+          <h3>The numbers to track</h3>
+          <table class="pr-table">
+            <thead><tr><th>Metric</th><th>Likely today</th><th>90-day target</th></tr></thead>
+            <tbody>${kpis}</tbody>
+          </table>
+          <h3>Projected outcome</h3>
+          <p>${esc(r.projectedOutcome)}</p>
+        `)}
+
+        <div class="pr-outro no-print">
+          <h3 style="font-family:var(--font-heading); font-size:1.4rem; margin-bottom:0.75rem;">Want this plan run for you?</h3>
+          <p style="color:var(--text-secondary); max-width:520px; margin:0 auto 1.5rem;">EchoLift automates most of what's in this report — answering every call, publishing the content, harvesting the reviews and tracking the rivals. Book a 15-minute call and we'll walk through your plan together.</p>
+          <div class="hero-cta-group" style="justify-content:center;">
+            <a href="https://calendly.com/echoliftai/15min" target="_blank" rel="noopener" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-calendar-check"></i> Book my 15-minute call
+            </a>
+            <a href="mailto:info@echoliftai.co.uk?subject=My%20premium%20growth%20report%20${encodeURIComponent(ref)}" class="btn btn-secondary btn-lg">
+              <i class="fa-solid fa-envelope"></i> Ask a question
+            </a>
+          </div>
+        </div>`;
+
+      loading.style.display = 'none';
+      message.style.display = 'none';
+      output.style.display = 'block';
+
+      const printBtn = document.getElementById('prPrint');
+      if (printBtn) printBtn.addEventListener('click', () => window.print());
+
+      const copyBtn = document.getElementById('prCopyLink');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          const url = data.reportUrl || window.location.href;
+          try {
+            await navigator.clipboard.writeText(url);
+            copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Link copied';
+          } catch {
+            copyBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Copy failed';
+          }
+          setTimeout(() => {
+            copyBtn.innerHTML = '<i class="fa-solid fa-link"></i> Copy link';
+          }, 2500);
+        });
+      }
+    };
+
+    // ----------------------------------------------------------------- poll
+    const sessionId = new URLSearchParams(window.location.search).get('session_id');
+
+    if (!sessionId) {
+      clearInterval(stepTimer);
+      showMessage(
+        "We couldn't find your purchase reference in this link. If you've already paid, open the report link in your confirmation email — or get in touch and we'll send it straight over.",
+        'fa-link-slash'
+      );
+      return;
+    }
+
+    let polls = 0;
+
+    const check = async () => {
+      polls += 1;
+      let res, data;
+      try {
+        res = await fetch('/api/premium-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId })
+        });
+        data = await res.json().catch(() => ({}));
+      } catch {
+        // A single network blip shouldn't end the wait — keep polling.
+        if (polls < MAX_POLLS) return setTimeout(check, POLL_MS);
+        clearInterval(stepTimer);
+        return showMessage('We lost the connection while loading your report. Please refresh the page.', 'fa-wifi');
+      }
+
+      if (data.configured === false) {
+        clearInterval(stepTimer);
+        return showMessage(
+          "Premium reports are being switched on. Email us at info@echoliftai.co.uk and we'll send yours over personally.",
+          'fa-hourglass-half'
+        );
+      }
+
+      if (data.status === 'ready') {
+        clearInterval(stepTimer);
+        return render(data);
+      }
+
+      if (data.status === 'failed') {
+        clearInterval(stepTimer);
+        return showMessage(
+          "Your payment went through, but our engine couldn't finish your report. Nothing is lost — email us your reference " +
+            (data.reportRef || '') + ' and we\'ll deliver it by hand today.',
+          'fa-triangle-exclamation'
+        );
+      }
+
+      if (!res.ok && data.status !== 'pending') {
+        clearInterval(stepTimer);
+        return showMessage(
+          data.error || "We couldn't load your report just now. Please refresh in a moment.",
+          'fa-circle-exclamation'
+        );
+      }
+
+      if (polls >= MAX_POLLS) {
+        clearInterval(stepTimer);
+        return showMessage(
+          "Your report is taking longer than usual. It's still being written and we'll email you the link as soon as it lands — you can safely close this page.",
+          'fa-envelope-circle-check'
+        );
+      }
+
+      setTimeout(check, POLL_MS);
+    };
+
+    check();
+  })();
+  </script>
+</body>
+</html>

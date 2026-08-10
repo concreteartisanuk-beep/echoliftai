@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexVoice | AI Autonomous Sales Agent</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="index.css">
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="portal-sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i data-lucide="zap"></i>
+        </div>
+        <span class="logo-text">ApexVoice</span>
+      </div>
+      
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#lead-finder" class="nav-item" data-tab="lead-finder">
+          <i data-lucide="search"></i>
+          <span>Lead Finder</span>
+        </a>
+        <a href="#campaign" class="nav-item" data-tab="campaign">
+          <i data-lucide="sliders"></i>
+          <span>Campaign Config</span>
+        </a>
+        <a href="#call-sim" class="nav-item" data-tab="call-sim">
+          <i data-lucide="phone-call"></i>
+          <span>Call Simulator</span>
+        </a>
+        <a href="#sms-hub" class="nav-item" data-tab="sms-hub">
+          <i data-lucide="message-square"></i>
+          <span>SMS Outreach</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="agent-status-card">
+          <div class="status-indicator-pulse"></div>
+          <div class="status-text-container">
+            <span class="status-label">Agent Alex Status</span>
+            <span class="status-value">Ready & In Standby</span>
+          </div>
+        </div>
+
+        <button type="button" id="portal-signout-btn" class="sidebar-signout">
+          <i data-lucide="log-out"></i>
+          <span>Sign out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Backdrop for the mobile navigation drawer -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-lead">
+          <button type="button" class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="portal-sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="header-title">
+            <h1 id="page-title">Dashboard Overview</h1>
+            <p id="page-subtitle">Track your autonomous AI agent's performance in real time.</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="add-lead-btn" class="btn btn-secondary">
+            <i data-lucide="plus"></i> Add Lead Manually
+          </button>
+        </div>
+      </header>
+
+      <!-- Connection / degraded-mode banner, populated by app.js -->
+      <div id="api-status-banner" class="api-status-banner" role="status" aria-live="polite"></div>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="dashboard-tab" class="tab-content active">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <i data-lucide="users"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Prospects</span>
+              <h2 class="stat-value" id="stat-total-leads">0</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <i data-lucide="phone"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">AI Calls Made</span>
+              <h2 class="stat-value" id="stat-total-calls">0</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <i data-lucide="calendar"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Demos Booked</span>
+              <h2 class="stat-value" id="stat-demos-booked">0</h2>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">
+              <i data-lucide="percent"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Conversion Rate</span>
+              <h2 class="stat-value" id="stat-conversion-rate">0%</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Layout Grid -->
+        <div class="dashboard-layout">
+          <!-- Left Column: Activity logs -->
+          <div class="dashboard-main-panel glass-panel">
+            <div class="panel-header">
+              <h3>Recent Campaign Activity Logs</h3>
+              <button id="refresh-logs-btn" class="btn-icon-only" title="Refresh Logs">
+                <i data-lucide="refresh-cw"></i>
+              </button>
+            </div>
+            <div class="logs-list" id="dashboard-logs-list">
+              <div class="empty-state">
+                <i data-lucide="history"></i>
+                <p>No recent activity. Try finding leads and launching a call simulation!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Campaign Summary & Agent details -->
+          <div class="dashboard-side-panel glass-panel">
+            <div class="panel-header">
+              <h3>Active Campaign Details</h3>
+            </div>
+            <div class="campaign-summary-card">
+              <h4 id="summary-company-name">OmniFlow Automation</h4>
+              <p class="summary-service-title" id="summary-service-name">AI Receptionist Installer</p>
+              <div class="summary-divider"></div>
+              <div class="summary-pitch-block">
+                <h5>Elevator Pitch</h5>
+                <p id="summary-pitch-text">Loading pitch...</p>
+              </div>
+              <div class="summary-meta-list">
+                <div class="summary-meta-item">
+                  <span class="label">AI Agent</span>
+                  <span class="value" id="summary-agent-name">Alex</span>
+                </div>
+                <div class="summary-meta-item">
+                  <span class="label">Offer Pricing</span>
+                  <span class="value" id="summary-pricing">$199/month</span>
+                </div>
+                <div class="summary-meta-item">
+                  <span class="label">Agent Persona</span>
+                  <span class="value" id="summary-persona">Professional & Warm</span>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" onclick="navigateToTab('campaign')">
+                <i data-lucide="edit-3"></i> Edit Campaign
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: LEAD FINDER -->
+      <section id="lead-finder-tab" class="tab-content">
+        <!-- Lead Search Panel -->
+        <div class="search-panel glass-panel">
+          <form id="lead-search-form" class="search-form">
+            <div class="form-group-row">
+              <div class="form-group flex-1">
+                <label for="search-industry">Industry / Niche</label>
+                <div class="input-with-icon">
+                  <i data-lucide="briefcase"></i>
+                  <input type="text" id="search-industry" placeholder="e.g. Plumbing, Roofing, Dentist, HVAC" required>
+                </div>
+              </div>
+              <div class="form-group flex-1">
+                <label for="search-location">UK City / Region</label>
+                <div class="input-with-icon">
+                  <i data-lucide="map-pin"></i>
+                  <input type="text" id="search-location" placeholder="e.g. London or Manchester, UK" required>
+                </div>
+              </div>
+              <div class="form-group-btn">
+                <button type="submit" class="btn btn-primary btn-search" id="search-leads-submit">
+                  <i data-lucide="search"></i> Find New Prospects
+                </button>
+              </div>
+            </div>
+          </form>
+          <p class="search-disclaimer">
+            <i data-lucide="info"></i>
+            Prospects are real businesses from the OpenStreetMap public directory, filtered to those
+            with a listed phone number or website. Contact names are not published, so add those
+            yourself as you qualify. Coverage of smaller trades is patchy — a thin result means the
+            directory is thin, not that the town is. Data ©
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>.
+          </p>
+        </div>
+
+        <!-- Leads Table Panel -->
+        <div class="leads-panel glass-panel">
+          <div class="panel-header">
+            <h3>Discovered Prospects & Leads</h3>
+            <span class="lead-count-badge" id="lead-count-badge">0 Prospects</span>
+          </div>
+          <div class="table-container">
+            <table class="leads-table">
+              <thead>
+                <tr>
+                  <th>Business Details</th>
+                  <th>Contact Person</th>
+                  <th>Warmth</th>
+                  <th>Identified Pain Point</th>
+                  <th>Status</th>
+                  <th>Last Action</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body">
+                <tr>
+                  <td colspan="7" class="table-empty">
+                    <div class="empty-state">
+                      <i data-lucide="users-2"></i>
+                      <p>No prospects yet. Search an industry and location above, or add one manually.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: CAMPAIGN CONFIG -->
+      <section id="campaign-tab" class="tab-content">
+        <div class="campaign-layout">
+          <!-- Campaign Form -->
+          <div class="campaign-main glass-panel">
+            <div class="panel-header">
+              <h3>Sales Agent Campaign settings</h3>
+              <span class="unsaved-badge" id="unsaved-badge" style="display: none;">Unsaved Changes</span>
+            </div>
+            <form id="campaign-form" class="campaign-form">
+              <div class="preset-selector-row">
+                <div class="preset-selector-head">
+                  <h4>Who is this campaign pitching?</h4>
+                  <p>Autofill the pitch below with EchoLift's own offer, or build one around a real business from your leads.</p>
+                </div>
+                <select id="campaign-preset-dropdown" class="sim-dropdown">
+                  <option value="">-- Choose --</option>
+                  <option value="echolift">EchoLift AI's details (SEO &amp; Voice Agent SaaS)</option>
+                  <option value="agency">White-Label AI Calling Receptionist Agency</option>
+                  <option value="customer">A potential customer's details</option>
+                </select>
+              </div>
+
+              <div class="preset-customer-row" id="campaign-customer-row" style="display: none;">
+                <label for="campaign-customer-lead">Build the pitch around this prospect</label>
+                <select id="campaign-customer-lead" class="sim-dropdown">
+                  <option value="">-- Choose a prospect --</option>
+                </select>
+                <span class="input-helper">
+                  Uses that business's real name, trade and town in the offer and hook. Your own company
+                  name stays as the caller — the AI still rings them on your behalf, pitching a receptionist
+                  built for them.
+                </span>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="campaign-company-name">Company Name</label>
+                  <input type="text" id="campaign-company-name" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="campaign-service-name">Service / Product to Sell</label>
+                  <input type="text" id="campaign-service-name" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="campaign-pricing">Offer Pricing / Model</label>
+                  <input type="text" id="campaign-pricing" placeholder="e.g. $199/month, $1500 setup" required>
+                </div>
+                <div class="form-group flex-1">
+                  <label for="campaign-agent-name">AI Agent Name</label>
+                  <input type="text" id="campaign-agent-name" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="campaign-personality">AI Agent Personality & Style</label>
+                  <input type="text" id="campaign-personality" placeholder="e.g. Friendly, consultative, direct closer" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="campaign-description">Detailed Service Description</label>
+                <textarea id="campaign-description" rows="3" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="campaign-hook">Conversational Opening Hook (Primary hook lines)</label>
+                <textarea id="campaign-hook" rows="3" required></textarea>
+                <span class="input-helper">This is the opening line the AI will use to capture the prospect's attention.</span>
+              </div>
+
+              <div class="section-divider"></div>
+              <h4>Objection Handling Guidelines</h4>
+              <p class="section-subtitle">Define exact scripts the AI should draw from when prospects push back.</p>
+
+              <div class="form-group">
+                <label for="objection-pricing">Pricing objections ("It's too expensive")</label>
+                <textarea id="objection-pricing" rows="2" required></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="objection-trust">Trust & Quality objections ("How do I know this is good?")</label>
+                <textarea id="objection-trust" rows="2" required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="objection-complexity">Complexity objections ("I don't have time to set this up")</label>
+                <textarea id="objection-complexity" rows="2" required></textarea>
+              </div>
+
+              <div class="section-divider"></div>
+              <h4>Voice Engine Settings (Optional)</h4>
+              <p class="section-subtitle">Provide an ElevenLabs key to swap local speech synthesis for realistic neural AI voice synthesis. The key is stored server-side and used by the portal's own voice proxy — it is never sent back to the browser.</p>
+
+              <div class="form-group">
+                <label for="elevenlabs-key">ElevenLabs API Key</label>
+                <input type="password" id="elevenlabs-key" autocomplete="off" placeholder="Enter a new xi-api-key, or leave blank to keep the saved one">
+                <span class="input-helper" id="elevenlabs-key-status">Checking saved voice configuration...</span>
+                <label class="checkbox-row" for="elevenlabs-clear">
+                  <input type="checkbox" id="elevenlabs-clear">
+                  <span>Remove the saved key and fall back to browser speech synthesis</span>
+                </label>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="elevenlabs-agent-voice">Agent Voice (Accent)</label>
+                  <select id="elevenlabs-agent-voice" class="sim-dropdown">
+                    <option value="Xb7hH2yqWyRel9GQ555e">Alice (UK Female - Crisp & Professional)</option>
+                    <option value="pMs2g897hxnH1SgAM21j">Serena (UK Female - Warm & Consultative)</option>
+                    <option value="21m00Tcm4TlvDq8ikWAM">Rachel (US Female - Default)</option>
+                    <option value="custom">-- Paste Custom Voice ID --</option>
+                  </select>
+                  <input type="text" id="elevenlabs-agent-voice-custom" placeholder="Paste custom ElevenLabs Voice ID" style="display: none; margin-top: 8px;">
+                </div>
+                <div class="form-group flex-1">
+                  <label for="elevenlabs-customer-voice">Customer Voice (Accent)</label>
+                  <select id="elevenlabs-customer-voice" class="sim-dropdown">
+                    <option value="JBF2rCBphFnJZjxrOi8j">George (UK Male - Calm & Mature)</option>
+                    <option value="N2lVS1wnd2uZ3aomNd5H">Callum (UK Male - Energetic & Hoarse)</option>
+                    <option value="SOYHLrjzK2t1I5ey52hC">Harry (UK Male - Friendly & Conversational)</option>
+                    <option value="EXAVITQu4vr4xnSDxMaL">Sarah (UK Female - Professional & Firm)</option>
+                    <option value="custom">-- Paste Custom Voice ID --</option>
+                  </select>
+                  <input type="text" id="elevenlabs-customer-voice-custom" placeholder="Paste custom ElevenLabs Voice ID" style="display: none; margin-top: 8px;">
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="campaign-reset-btn">Reset Defaults</button>
+                <button type="submit" class="btn btn-primary" id="campaign-save-btn">
+                  <i data-lucide="check"></i> Save Campaign Settings
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Quick Preview / Reference -->
+          <div class="campaign-sidebar">
+            <div class="glass-panel">
+              <h3>Prompt Reference</h3>
+              <div class="reference-item">
+                <div class="ref-title">Integrations Active</div>
+                <div class="ref-content">
+                  <div class="pill-indicator active">Call Simulation Mode: High Fidelity Local</div>
+                  <div class="pill-indicator inactive" id="elevenlabs-status-pill">ElevenLabs Voices: Disabled (Local Web Speech)</div>
+                  <div class="pill-indicator inactive">Real Twilio Line: Disabled</div>
+                </div>
+              </div>
+              <div class="reference-item">
+                <div class="ref-title">Dialogue Synthesis</div>
+                <p>When you trigger call simulations, ApexVoice generates natural speech interactions in real-time, utilizing these settings to adjust its conversation model, objections, and negotiation.</p>
+              </div>
+              <div class="reference-item">
+                <div class="ref-title">Live API Setup</div>
+                <p class="helper-text-code">Dialogue, prospects and voice proxying all run on this site's own serverless functions under /api/apexvoice/. To use premium voices without storing a key here, set ELEVENLABS_API_KEY in the site's environment variables instead.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: CALL SIMULATOR -->
+      <section id="call-sim-tab" class="tab-content">
+        <div class="simulator-layout">
+          <!-- Left: Call Interface Device -->
+          <div class="simulator-device-panel">
+            <div class="phone-device glass-panel">
+              <div class="phone-screen">
+                <!-- Status header -->
+                <div class="phone-header">
+                  <div class="signal-icons">
+                    <i data-lucide="signal"></i> LTE
+                  </div>
+                  <div class="battery-icon">
+                    100% <i data-lucide="battery"></i>
+                  </div>
+                </div>
+
+                <!-- Call Body (Ringing/Active) -->
+                <div class="phone-body" id="phone-body-screen">
+                  
+                  <!-- Setup Screen (Initial state) -->
+                  <div class="phone-state-setup" id="call-state-setup">
+                    <div class="dialer-avatar">
+                      <i data-lucide="user-check"></i>
+                    </div>
+                    <h4>Launch Call Simulator</h4>
+                    <p class="setup-instructions">Select a lead and their persona to watch the AI Agent dial, pitches, handles objections and tries to book a demo.</p>
+                    
+                    <div class="dialer-inputs">
+                      <div class="form-group text-left">
+                        <label for="sim-select-lead">Select Lead to Call</label>
+                        <select id="sim-select-lead" class="sim-dropdown">
+                          <option value="">-- Choose Lead --</option>
+                        </select>
+                      </div>
+                      <div class="form-group text-left">
+                        <label for="sim-select-persona">Lead Persona Profile</label>
+                        <select id="sim-select-persona" class="sim-dropdown">
+                          <option value="polite">Polite & Open-Minded</option>
+                          <option value="skeptical">Skeptical & Price-Conscious</option>
+                          <option value="busy">Busy Contractor (Rushed)</option>
+                          <option value="hostile">Hostile / Strict Gatekeeper</option>
+                        </select>
+                      </div>
+                      <button class="btn btn-primary btn-block btn-lg" id="start-simulation-btn">
+                        <i data-lucide="phone"></i> Start Simulated Outbound Call
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Active Call Screen -->
+                  <div class="phone-state-active" id="call-state-active" style="display: none;">
+                    <div class="call-contact-name" id="call-active-contact">Robert Miller</div>
+                    <div class="call-business-name" id="call-active-business">Precision Plumbing</div>
+                    <div class="call-phone" id="call-active-phone">+1 (312) 555-0143</div>
+                    
+                    <div class="call-timer" id="call-active-timer">00:00</div>
+
+                    <!-- Audio Waveform Visualizer -->
+                    <div class="waveform-container">
+                      <div class="waveform-bar bar-1"></div>
+                      <div class="waveform-bar bar-2"></div>
+                      <div class="waveform-bar bar-3"></div>
+                      <div class="waveform-bar bar-4"></div>
+                      <div class="waveform-bar bar-5"></div>
+                      <div class="waveform-bar bar-6"></div>
+                      <div class="waveform-bar bar-7"></div>
+                      <div class="waveform-bar bar-8"></div>
+                      <div class="waveform-bar bar-9"></div>
+                      <div class="waveform-bar bar-10"></div>
+                    </div>
+
+                    <div class="call-status-label" id="call-active-status">Ringing...</div>
+
+                    <div class="phone-controls">
+                      <button class="btn-round hangup" id="hangup-call-btn" title="Hang Up">
+                        <i data-lucide="phone-off"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Dynamic Call Transcript Log -->
+          <div class="simulator-transcript-panel glass-panel">
+            <div class="panel-header">
+              <h3>Live Transcription Stream</h3>
+              <div class="sim-speed-control">
+                <span>Simulation Speed:</span>
+                <span class="speed-indicator" id="speed-label">Normal</span>
+              </div>
+            </div>
+            <div class="transcript-feed" id="transcript-feed-box">
+              <div class="empty-state-transcript">
+                <i data-lucide="scroll-text"></i>
+                <p>Waiting for a call to start... Transcript will display here in real-time.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: SMS OUTREACH -->
+      <section id="sms-hub-tab" class="tab-content">
+        <div class="sms-layout">
+          <!-- Left: SMS Contacts List -->
+          <div class="sms-sidebar glass-panel">
+            <div class="panel-header">
+              <h3>Conversations</h3>
+            </div>
+            <div class="sms-conversations-list" id="sms-contacts-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Right: Chat Window -->
+          <div class="sms-chat-window glass-panel">
+            <div id="sms-chat-empty" class="empty-state">
+              <i data-lucide="message-square-dashed"></i>
+              <p>Select a contact from the list to view the AI SMS outreach thread.</p>
+            </div>
+            
+            <div id="sms-chat-active" class="sms-chat-container" style="display: none;">
+              <!-- Header -->
+              <div class="chat-header">
+                <div class="chat-contact-avatar" id="chat-header-avatar">RM</div>
+                <div class="chat-contact-info">
+                  <h4 id="chat-header-name">Robert Miller</h4>
+                  <span id="chat-header-business">Precision Plumbing</span>
+                </div>
+                <div class="chat-actions">
+                  <span class="badge badge-primary">AI Automation Active</span>
+                </div>
+              </div>
+
+              <!-- Messages Stream -->
+              <div class="chat-messages" id="chat-messages-box">
+                <!-- Messages rendered via JS -->
+              </div>
+
+              <!-- Footer Input -->
+              <div class="chat-input-area">
+                <div class="chat-status-bar">
+                  <i data-lucide="sparkles"></i> AI Agent Alex is monitoring. Messages are sent automatically.
+                </div>
+                <div class="input-actions-row">
+                  <input type="text" id="sms-manual-reply" placeholder="Type a reply to take over manual control..." class="flex-1">
+                  <button class="btn btn-primary" id="sms-send-btn">
+                    <i data-lucide="send"></i> Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ADD LEAD MODAL -->
+  <div class="modal-overlay" id="add-lead-modal">
+    <div class="modal-card glass-panel">
+      <div class="modal-header">
+        <h3>Add Lead Manually</h3>
+        <button class="btn-close" id="modal-close-btn">&times;</button>
+      </div>
+      <form id="add-lead-form">
+        <div class="form-group">
+          <label for="lead-modal-business">Business Name *</label>
+          <input type="text" id="lead-modal-business" required>
+        </div>
+        <div class="form-group">
+          <label for="lead-modal-contact">Contact Person Name</label>
+          <input type="text" id="lead-modal-contact" placeholder="e.g. John Doe">
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="lead-modal-industry">Industry *</label>
+            <input type="text" id="lead-modal-industry" placeholder="e.g. Plumbing, HVAC" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="lead-modal-location">Location (City / Region) *</label>
+            <input type="text" id="lead-modal-location" placeholder="e.g. London, UK" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label for="lead-modal-phone">Phone Number *</label>
+            <input type="tel" id="lead-modal-phone" placeholder="e.g. +44 20 7946 0100" required>
+          </div>
+          <div class="form-group flex-1">
+            <label for="lead-modal-email">Email Address</label>
+            <input type="email" id="lead-modal-email" placeholder="e.g. owner@business.co.uk">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="lead-modal-website">Website URL</label>
+          <input type="text" id="lead-modal-website" placeholder="e.g. business.co.uk">
+        </div>
+        <div class="form-group">
+          <label for="lead-modal-pain">Identified Pain Points</label>
+          <textarea id="lead-modal-pain" rows="2" placeholder="e.g. Missing after-hours bookings, has slow response times on requests."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Lead</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Page JS Script -->
+  <script src="app.js"></script>
+</body>
+</html>

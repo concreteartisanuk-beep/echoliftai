@@ -324,6 +324,135 @@ export const scriptedThread = (
   }
 }
 
+/* --------------------------------------------------------------------- SMS */
+
+/**
+ * Real outbound/inbound SMS via Twilio's REST API, called directly with
+ * `fetch` rather than the `twilio` SDK — one HTTP call, no extra dependency
+ * to bundle into the function.
+ *
+ * All three env vars must be set in Netlify (Site settings > Environment
+ * variables) for sending to work:
+ *   TWILIO_ACCOUNT_SID   - starts with "AC..."
+ *   TWILIO_AUTH_TOKEN    - from the same Twilio console page
+ *   TWILIO_FROM_NUMBER   - the SMS-capable Twilio number, E.164 (+44...)
+ */
+export const twilioConfigured = (): boolean =>
+  Boolean(
+    Netlify.env.get('TWILIO_ACCOUNT_SID') &&
+    Netlify.env.get('TWILIO_AUTH_TOKEN') &&
+    Netlify.env.get('TWILIO_FROM_NUMBER'),
+  )
+
+/**
+ * Best-effort UK-biased E.164 normaliser. Business-directory phone numbers
+ * arrive in all sorts of formats ("0191 406 2323", "+44 191 406 2323",
+ * "07123456789"), and Twilio requires strict E.164. This is deliberately
+ * simple: strip everything but digits and a leading +, then fix up the two
+ * common UK shapes. Numbers that already look international are left alone.
+ */
+export const toE164 = (raw: string): string | null => {
+  const trimmed = raw.trim()
+  if (!trimmed) return null
+
+  const hasPlus = trimmed.startsWith('+')
+  const digits = trimmed.replace(/[^\d]/g, '')
+  if (!digits) return null
+
+  if (hasPlus) return `+${digits}`
+  if (digits.startsWith('44')) return `+${digits}`
+  if (digits.startsWith('0')) return `+44${digits.slice(1)}`
+  // Bare 10-digit UK mobile/landline with no leading 0 (rare, but seen in
+  // scraped directory data).
+  if (digits.length === 10) return `+44${digits}`
+
+  return null
+}
+
+/** Last 9 significant digits, used to match an inbound Twilio "From" number
+ * back to a prospect row without needing every stored number to already be
+ * in strict E.164. */
+export const phoneFingerprint = (raw: string): string => {
+  const digits = raw.replace(/[^\d]/g, '')
+  return digits.slice(-9)
+}
+
+export interface SmsSendResult {
+  ok: boolean
+  error?: string
+}
+
+/** Sends one real SMS via Twilio. Never throws — callers check `.ok`. */
+export async function sendSms(toRaw: string, body: string): Promise<SmsSendResult> {
+  const sid = Netlify.env.get('TWILIO_ACCOUNT_SID')
+  const token = Netlify.env.get('TWILIO_AUTH_TOKEN')
+  const from = Netlify.env.get('TWILIO_FROM_NUMBER')
+
+  if (!sid || !token || !from) {
+    return { ok: false, error: 'Twilio is not configured (missing TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER).' }
+  }
+
+  const to = toE164(toRaw)
+  if (!to) {
+    return { ok: false, error: `Could not parse "${toRaw}" as a sendable phone number.` }
+  }
+
+  try {
+    const auth = Buffer.from(`${sid}:${token}`).toString('base64')
+    const params = new URLSearchParams({ To: to, From: from, Body: body })
+
+    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    })
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '')
+      return { ok: false, error: `Twilio rejected the send (${res.status}): ${detail.slice(0, 300)}` }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : 'Unknown error calling Twilio.' }
+  }
+}
+
+/**
+ * Validates that an inbound webhook request really came from Twilio, using
+ * the same HMAC-SHA1 scheme Twilio's own client libraries use. Skipped (and
+ * logged) when TWILIO_AUTH_TOKEN isn't set, so local/dev testing isn't
+ * blocked — but that means production must always have the token set.
+ */
+export async function verifyTwilioSignature(
+  url: string,
+  params: Record<string, string>,
+  signatureHeader: string | null,
+): Promise<boolean> {
+  const token = Netlify.env.get('TWILIO_AUTH_TOKEN')
+  if (!token) {
+    console.error('apexvoice sms-inbound: TWILIO_AUTH_TOKEN not set, cannot verify signature')
+    return false
+  }
+  if (!signatureHeader) return false
+
+  const sortedKeys = Object.keys(params).sort()
+  const data = sortedKeys.reduce((acc, key) => acc + key + params[key], url)
+
+  const subtle = globalThis.crypto?.subtle
+  if (!subtle) return false
+
+  const keyData = new TextEncoder().encode(token)
+  const cryptoKey = await subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign'])
+  const signature = await subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(data))
+  const expected = Buffer.from(signature).toString('base64')
+
+  return expected === signatureHeader
+}
+
 /* --------------------------------------------------------------- persistence */
 
 /** Record an outcome on the prospect and drop a row in the activity feed. */

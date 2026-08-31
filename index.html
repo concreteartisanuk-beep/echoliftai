@@ -838,30 +838,32 @@ Rules:
       }
     });
 
+    const isMobileWindow = window.innerWidth <= 768;
+
     const buttonConfig = {
       position: "bottom-right",
-      offset: "40px",
+      offset: isMobileWindow ? "16px" : "40px",
       width: "56px",
       height: "56px",
       idle: {
         color: "rgb(99, 102, 241)",
         type: "pill",
-        title: "Talk to Echo AI",
-        subtitle: "Ask us anything — live",
+        title: isMobileWindow ? "Talk to Echo" : "Talk to Echo AI",
+        subtitle: isMobileWindow ? "" : "Ask us anything — live",
         icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone.svg",
       },
       loading: {
         color: "rgb(139, 92, 246)",
         type: "pill",
-        title: "Connecting to Echo...",
-        subtitle: "Please wait",
+        title: isMobileWindow ? "Connecting..." : "Connecting to Echo...",
+        subtitle: isMobileWindow ? "" : "Please wait",
         icon: "https://unpkg.com/lucide-static@0.321.0/icons/loader-2.svg",
       },
       active: {
         color: "rgb(239, 68, 68)",
         type: "pill",
-        title: "Live call in progress",
-        subtitle: "Click to end call",
+        title: isMobileWindow ? "End Call" : "Live call in progress",
+        subtitle: isMobileWindow ? "" : "Click to end call",
         icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone-off.svg",
       },
     };
@@ -886,5 +888,13 @@ Rules:
       };
     })(document, "script");
   </script>
+
+  <!-- Mobile Floating Action Button (Book Appointment) -->
+  <div class="mobile-floating-actions" id="mobileFloatingActions">
+    <a href="https://calendly.com/echoliftai/15min" target="_blank" rel="noopener" class="btn-mobile-book">
+      <i class="fa-solid fa-calendar-check"></i>
+      <span>Book Appointment</span>
+    </a>
+  </div>
 </body>
 </html>

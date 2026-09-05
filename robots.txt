@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Exclude backend function endpoints from search engines
+Disallow: /.netlify/
+
+Sitemap: https://echoliftai.co.uk/sitemap.xml

@@ -1926,12 +1926,108 @@ h1, h2, h3, h4, .font-heading {
     gap: 6px;
   }
 
-  #vapi-support-btn,
-  div[id*="vapi-btn"],
-  div[class*="vapi-btn"],
-  iframe[id*="vapi"] {
-    bottom: 12px !important;
-    right: 12px !important;
+/* --- ApexVoice Business Pricing Section --- */
+.apexvoice-pricing-section {
+  padding: 5rem 0;
+  background: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 60%);
+}
+
+.pricing-cards-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+@media (max-width: 992px) {
+  .pricing-cards-grid-3 {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
+
+.pricing-card-item {
+  display: flex;
+  flex-direction: column;
+  padding: 2.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-glass);
+  background: var(--bg-glass-strong);
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.pricing-card-item:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.pricing-card-item.popular-plan {
+  border-color: var(--accent-primary);
+  background: linear-gradient(160deg, rgba(99, 102, 241, 0.18) 0%, rgba(15, 23, 42, 0.8) 100%);
+  box-shadow: 0 12px 40px -10px rgba(99, 102, 241, 0.35);
+}
+
+.plan-popular-badge {
+  position: absolute;
+  top: -14px;
+  right: 24px;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.card-header h3 {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.card-price {
+  margin: 1rem 0 0.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.price-val {
+  font-family: var(--font-heading);
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.price-period {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.card-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.pricing-card-item .feature-list {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pricing-card-item .feature-list li {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 

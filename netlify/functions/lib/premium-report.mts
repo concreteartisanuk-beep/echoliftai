@@ -13,8 +13,8 @@ import Stripe from 'stripe'
  * `premium-report` entry in create-checkout's CATALOG — this constant exists so
  * emails and page copy can quote the same figure. Change both together.
  */
-export const PREMIUM_REPORT_PRICE_PENCE = 4700
-export const PREMIUM_REPORT_PRICE_LABEL = '£47'
+export const PREMIUM_REPORT_PRICE_PENCE = 2500
+export const PREMIUM_REPORT_PRICE_LABEL = '£25'
 
 export interface OrderRow {
   id: number

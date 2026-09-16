@@ -91,10 +91,10 @@ export const reportBriefEmail = (lead: Lead) => {
       <h1 style="font-size:22px;margin:0 0 12px;">We've saved your brief for ${esc(name)} 👋</h1>
       <p>Your Premium AI Growth Report is written the moment you check out: ten sections built around ${esc(name)}, including an 8-keyword plan, a local SEO audit, a competitor breakdown, content and social playbooks and a 90-day action plan.</p>
       <div style="background:#f5f5ff;border-radius:12px;padding:16px;margin:16px 0;">
-        <div style="font-size:26px;font-weight:700;color:#6366f1;">£47</div>
+        <div style="font-size:26px;font-weight:700;color:#6366f1;">£25</div>
         <div style="font-size:13px;color:#6b6b80;">one-off — no subscription, print-ready branded PDF you keep</div>
       </div>
-      <p>${cta('Complete my report — £47', `${SITE_URL()}/#growth-report`)}</p>
+      <p>${cta('Complete my report — £25', `${SITE_URL()}/#growth-report`)}</p>
       <p style="font-size:14px;color:#6b6b80;">Rather see exactly what lands in your inbox first? <a href="${SITE_URL()}/#premium-report" style="color:#6366f1;font-weight:600;">Here's every section</a>. Or reply to this email and we'll answer anything before you buy.</p>
     `),
   }

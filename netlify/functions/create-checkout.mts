@@ -109,7 +109,7 @@ const CATALOG: Record<string, CatalogItem> = {
     // Launch price. Deliberately low-friction — this is the entry product that
     // turns cold traffic into a paying customer before any subscription.
     // Mirrored in netlify/functions/lib/premium-report.mts for display copy.
-    oneTime: 4700,
+    oneTime: 2500,
     mode: 'payment',
   },
 }
@@ -219,7 +219,9 @@ export default async (req: Request, context: Context) => {
       allow_promotion_codes: true,
       ...(prefillEmail ? { customer_email: prefillEmail } : {}),
       metadata,
-      ...(item.mode === 'payment' ? { payment_intent_data: { metadata } } : {}),
+      ...(item.mode === 'payment'
+        ? { payment_intent_data: { metadata, statement_descriptor_suffix: 'ECHOLIFT' } }
+        : {}),
     })
 
     return Response.json({ configured: true, url: session.url })

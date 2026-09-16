@@ -14,7 +14,7 @@
 (() => {
   'use strict';
 
-  const PRICE_LABEL = '£47';
+  const PRICE_LABEL = '£25';
   const BUY_LABEL = `Get my report — ${PRICE_LABEL}`;
   const STORAGE_KEY = 'echolift.reportBrief';
 

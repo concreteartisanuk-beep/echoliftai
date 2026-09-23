@@ -164,6 +164,5 @@ Status: 24/7 ACTIVE | echoliftai.co.uk`
 }
 
 export const config: Config = {
-  path: '/api/daily-report-cron',
   schedule: '0 18 * * *',
 }

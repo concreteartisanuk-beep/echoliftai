@@ -93,6 +93,5 @@ export default async () => {
 }
 
 export const config: Config = {
-  path: '/api/automated-prospect-outreach',
   schedule: '0 10 * * 1-5', // Mon-Fri at 10:00 AM UTC
 }

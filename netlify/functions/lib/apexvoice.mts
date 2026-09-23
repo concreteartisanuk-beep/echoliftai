@@ -337,11 +337,19 @@ export const scriptedThread = (
  *   TWILIO_AUTH_TOKEN    - from the same Twilio console page
  *   TWILIO_FROM_NUMBER   - the SMS-capable Twilio number, E.164 (+44...)
  */
+export const getEnv = (key: string): string => {
+  if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key]!
+  try {
+    if (typeof Netlify !== 'undefined' && (Netlify as any).env) return (Netlify as any).env.get(key) || ''
+  } catch {}
+  return ''
+}
+
 export const twilioConfigured = (): boolean =>
   Boolean(
-    Netlify.env.get('TWILIO_ACCOUNT_SID') &&
-    Netlify.env.get('TWILIO_AUTH_TOKEN') &&
-    Netlify.env.get('TWILIO_FROM_NUMBER'),
+    (getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')) &&
+    getEnv('TWILIO_AUTH_TOKEN') &&
+    (getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || true),
   )
 
 /**
@@ -384,9 +392,9 @@ export interface SmsSendResult {
 
 /** Sends one real SMS via Twilio. Never throws — callers check `.ok`. */
 export async function sendSms(toRaw: string, body: string): Promise<SmsSendResult> {
-  const sid = Netlify.env.get('TWILIO_ACCOUNT_SID')
-  const token = Netlify.env.get('TWILIO_AUTH_TOKEN')
-  const from = Netlify.env.get('TWILIO_FROM_NUMBER')
+  const sid = getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')
+  const token = getEnv('TWILIO_AUTH_TOKEN')
+  const from = getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || 'EchoLift'
 
   if (!sid || !token || !from) {
     return { ok: false, error: 'Twilio is not configured (missing TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER).' }

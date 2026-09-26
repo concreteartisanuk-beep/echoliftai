@@ -19,8 +19,8 @@
   /* Status Colors */
   --color-success: #10b981;
   --color-success-bg: rgba(16, 185, 129, 0.1);
-  --color-info: #3b82f6;
-  --color-info-bg: rgba(59, 130, 246, 0.1);
+  --color-info: #94a3b8;
+  --color-info-bg: rgba(148, 163, 184, 0.1);
   --color-warning: #f59e0b;
   --color-warning-bg: rgba(245, 158, 11, 0.1);
   --color-danger: #ef4444;
@@ -399,7 +399,7 @@ body::after {
 }
 
 .stat-icon.purple { background: rgba(157, 78, 221, 0.15); color: #c084fc; border: 1px solid rgba(157, 78, 221, 0.2); }
-.stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+.stat-icon.blue { background: rgba(148, 163, 184, 0.15); color: #60a5fa; border: 1px solid rgba(148, 163, 184, 0.2); }
 .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
 .stat-icon.amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
 
@@ -481,7 +481,7 @@ body::after {
   align-items: center;
   justify-content: center;
 }
-.log-type-badge.call { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+.log-type-badge.call { background: rgba(148, 163, 184, 0.12); color: #60a5fa; }
 .log-type-badge.sms { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
 
 .log-details h5 {
@@ -1516,7 +1516,7 @@ body::after {
 
 .api-status-banner.notice {
   background: var(--color-info-bg);
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.35);
   color: #93c5fd;
 }
 
@@ -1568,8 +1568,8 @@ body::after {
 .preset-customer-row {
   margin: -8px 0 20px 0;
   padding: 16px;
-  background: rgba(59, 130, 246, 0.06);
-  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 10px;
 }
 
@@ -1637,7 +1637,7 @@ body::after {
   padding: 1px 6px;
   border-radius: 4px;
   background: var(--color-info-bg);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.3);
   color: #93c5fd;
   font-size: 10px;
   font-weight: 600;

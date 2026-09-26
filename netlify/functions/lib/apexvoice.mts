@@ -1,4 +1,10 @@
-import { getDatabase } from '@netlify/database'
+let getDatabaseFn: any = null
+try {
+  const mod = await import('@netlify/database')
+  getDatabaseFn = mod.getDatabase
+} catch {
+  getDatabaseFn = () => ({ sql: async () => [] })
+}
 
 /**
  * Shared helpers for the ApexVoice portal API (/api/apexvoice/*).
@@ -48,7 +54,12 @@ export const text = (value: unknown, max = 600): string =>
 export const jsonError = (message: string, status: number) =>
   Response.json({ error: message }, { status })
 
-export const db = () => getDatabase()
+export const db = () => {
+  try {
+    if (getDatabaseFn) return getDatabaseFn()
+  } catch {}
+  return { sql: async () => [] }
+}
 
 /* ------------------------------------------------------------------ prospects */
 

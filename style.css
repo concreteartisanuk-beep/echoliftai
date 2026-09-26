@@ -1,15 +1,15 @@
 /* --- CSS Variables & Design Tokens --- */
 :root {
   /* Colors */
-  --bg-primary: #060910;
-  --bg-secondary: #0b111e;
+  --bg-primary: #070b14;
+  --bg-secondary: #0d1527;
   --bg-glass: rgba(15, 23, 42, 0.4);
   --bg-glass-strong: rgba(15, 23, 42, 0.7);
   
   /* Accents */
-  --accent-primary: #6366f1; /* Indigo */
-  --accent-secondary: #8b5cf6; /* Violet */
-  --accent-tertiary: #0ea5e9; /* Sky blue */
+  --accent-primary: #3b82f6; /* Indigo */
+  --accent-secondary: #6366f1; /* Violet */
+  --accent-tertiary: #38bdf8; /* Sky blue */
   
   --status-red: #ef4444;
   --status-red-light: rgba(239, 68, 68, 0.15);
@@ -2189,3 +2189,69 @@ h1, h2, h3, h4, .font-heading {
 }
 
 
+
+
+/* --- Problem Solver Section Styles --- */
+.problem-solver-section {
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  border-top: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.problem-solver-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.solver-card {
+  padding: 1.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 21, 39, 0.6);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.solver-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary);
+}
+
+.solver-badge {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.solver-card h3 {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.solver-card p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+
+.solver-solution {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.solver-solution strong {
+  color: #34d399;
+}

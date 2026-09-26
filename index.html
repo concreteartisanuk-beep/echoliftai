@@ -925,24 +925,38 @@
       const text = document.getElementById("demoCallText");
       const wave = document.getElementById("demoWaveContainer");
 
+      if (isHomepageCallActive) {
+        if (homepageVapi) homepageVapi.stop();
+        return;
+      }
+
+      // 1. Instant Visual Feedback so the user knows it is connecting immediately
+      btn.classList.add("connecting");
+      icon.className = "fa-solid fa-circle-notch fa-spin";
+      text.innerText = "Connecting to AI...";
+
       if (!homepageVapi) {
         if (typeof window.Vapi === "undefined") {
           alert("Vapi SDK is still loading. Please wait a moment.");
+          btn.classList.remove("connecting");
+          icon.className = "fa-solid fa-phone";
+          text.innerText = "Talk to AI Assistant";
           return;
         }
         homepageVapi = new (window.Vapi.default || window.Vapi)(apiKey);
 
         homepageVapi.on("call-start", () => {
           isHomepageCallActive = true;
+          btn.classList.remove("connecting");
           btn.classList.add("active");
           icon.className = "fa-solid fa-phone-slash";
-          text.innerText = "End Call";
+          text.innerText = "End Call (Live)";
           wave.style.display = "flex";
         });
 
         homepageVapi.on("call-end", () => {
           isHomepageCallActive = false;
-          btn.classList.remove("active");
+          btn.classList.remove("connecting", "active");
           icon.className = "fa-solid fa-phone";
           text.innerText = "Talk to AI Assistant";
           wave.style.display = "none";
@@ -952,52 +966,63 @@
           console.error("Vapi Error:", e);
           alert("Failed to connect to the Voice Assistant. Please ensure your microphone is enabled.");
           isHomepageCallActive = false;
-          btn.classList.remove("active");
+          btn.classList.remove("connecting", "active");
           icon.className = "fa-solid fa-phone";
           text.innerText = "Talk to AI Assistant";
           wave.style.display = "none";
         });
       }
 
-      if (isHomepageCallActive) {
-        homepageVapi.stop();
-      } else {
-        const bizName = document.getElementById("demoBizName").value || "Your Business";
-        const bizNiche = document.getElementById("demoNiche").value || "general services";
-        const bizCity = document.getElementById("demoCity").value || "your local area";
-        const bizUsp = document.getElementById("demoUsp").value || "professional quality work";
+      const bizName = document.getElementById("demoBizName").value || "Your Business";
+      const bizNiche = document.getElementById("demoNiche").value || "general services";
+      const bizCity = document.getElementById("demoCity").value || "your local area";
+      const bizUsp = document.getElementById("demoUsp").value || "professional quality work";
 
-        const nicheTitle = bizNiche.charAt(0).toUpperCase() + bizNiche.slice(1);
+      const nicheTitle = bizNiche.charAt(0).toUpperCase() + bizNiche.slice(1);
 
-        const overrides = {
-          firstMessage: `Hi! Thank you for calling ${bizName}. I am your EchoLift AI assistant. How can I help you today?`,
-          model: {
-            provider: "openai",
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content: `You are an automated reception assistant named Echo, working 24/7 for "${bizName}" located in ${bizCity}. 
-Your goal is to be extremely professional, warm, polite, and helpful. 
-You answer customer questions and book callbacks.
+      // Ultra-low latency configuration for sub-second responses
+      const overrides = {
+        firstMessageMode: "assistant-speaks-first",
+        firstMessage: `Hi! Thank you for calling ${bizName}. I am your EchoLift AI assistant. How can I help you today?`,
+        model: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+          temperature: 0.3,
+          maxTokens: 90,
+          messages: [
+            {
+              role: "system",
+              content: `You are an automated reception assistant named Echo working 24/7 for "${bizName}" in ${bizCity}. 
+Your goal is to be warm, concise, and ultra-responsive. Keep every answer under 2 sentences.
 
-Key Business Info:
-- Business Name: ${bizName}
-- Industry/Niche: ${nicheTitle} / ${bizNiche} services
+Business Info:
+- Name: ${bizName}
+- Industry: ${nicheTitle} / ${bizNiche}
 - Location: ${bizCity}
-- Primary USP/Highlight: ${bizUsp}
+- Highlight: ${bizUsp}
 
 Rules:
-1. Greet the caller using the business name: "${bizName}".
-2. Offer to book a callback. If the caller wants a callback, politely ask for their name, their phone number, and a preferred time, then say you will notify the team.
-3. Keep answers concise. If asked a highly technical question, say: "That's a great question, let me get our main technician to call you back to discuss it."`
-              }
-            ]
-          }
-        };
+1. Greet the caller using: "${bizName}".
+2. Offer to book a callback. Gather their name and phone number briefly.
+3. Keep answers very short and direct for fast voice conversation.`
+            }
+          ]
+        },
+        transcriber: {
+          provider: "deepgram",
+          model: "nova-2",
+          language: "en-GB"
+        }
+      };
 
-        try {
-          homepageVapi.start(assistant, overrides);
+      try {
+        await homepageVapi.start(assistant, overrides);
+      } catch (e) {
+        console.error("Failed to start Vapi:", e);
+        btn.classList.remove("connecting");
+        icon.className = "fa-solid fa-phone";
+        text.innerText = "Talk to AI Assistant";
+      }
         } catch (e) {
           console.error("Failed to start Vapi:", e);
         }

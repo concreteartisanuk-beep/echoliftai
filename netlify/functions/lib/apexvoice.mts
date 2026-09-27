@@ -405,7 +405,10 @@ export interface SmsSendResult {
 export async function sendSms(toRaw: string, body: string): Promise<SmsSendResult> {
   const sid = getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')
   const token = getEnv('TWILIO_AUTH_TOKEN')
-  const from = getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || 'EchoLift'
+  let from = getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || 'EchoLift'
+  if (from === '+441914062323' || from.includes('1914062323')) {
+    from = 'EchoLift'
+  }
 
   if (!sid || !token || !from) {
     return { ok: false, error: 'Twilio is not configured (missing TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER).' }

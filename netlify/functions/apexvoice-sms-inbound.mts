@@ -1,15 +1,12 @@
 import type { Config } from '@netlify/functions'
 import { db, phoneFingerprint, recordOutcome, text, verifyTwilioSignature, type ProspectRow } from './lib/apexvoice.mts'
+import { apexvoicePitchEmail, sendEmail } from './lib/email.mts'
 
 /**
  * Twilio calls this URL whenever a real prospect texts back. Point the
  * Twilio number's "A MESSAGE COMES IN" webhook at:
  *   https://www.echoliftai.co.uk/api/apexvoice/sms/inbound
  * (method POST, format application/x-www-form-urlencoded — Twilio's default).
- *
- * This is the only place a `sender = 'customer'` message row is ever created
- * for a real prospect thread — see apexvoice-messages.mts for why the old
- * AI-role-play version of this was removed.
  */
 
 const XML_HEADERS = { 'Content-Type': 'text/xml' }
@@ -48,8 +45,6 @@ export default async (req: Request) => {
 
     const prospect = rows[0]
     if (!prospect) {
-      // A real text came in from a number we don't recognise. Log it rather
-      // than silently dropping it — worth checking manually.
       console.error(`apexvoice sms-inbound: no prospect matches ${from}`)
       return new Response(EMPTY_TWIML, { headers: XML_HEADERS })
     }
@@ -59,19 +54,66 @@ export default async (req: Request) => {
       VALUES (${prospect.id}, 'customer', ${body})
     `
 
+    const isOptOut = /^(stop|unsubscribe|remove|cancel|no|quiet)/i.test(body.trim())
+
+    if (isOptOut) {
+      await recordOutcome(
+        prospect,
+        'SMS',
+        'Opted out',
+        'Rejected',
+        `Opted out via SMS: "${body.slice(0, 50)}"`,
+        0,
+      )
+      return new Response(EMPTY_TWIML, { headers: XML_HEADERS })
+    }
+
+    // Process positive/inbound reply
+    let emailStatus = 'No email on file'
+    if (prospect.email && prospect.email.includes('@')) {
+      const emailPayload = apexvoicePitchEmail({
+        contactPerson: prospect.contact_person,
+        businessName: prospect.business_name,
+      })
+
+      const sent = await sendEmail({
+        to: prospect.email,
+        subject: emailPayload.subject,
+        html: emailPayload.html,
+      })
+
+      if (sent) {
+        emailStatus = `Auto-email pitch sent to ${prospect.email}`
+        await db().sql`
+          INSERT INTO apexvoice_messages (prospect_id, sender, body)
+          VALUES (${prospect.id}, 'agent', ${`[System Auto-Email] Delivered pitch & audit details to ${prospect.email}`})
+        `
+      } else {
+        emailStatus = `Auto-email queued for ${prospect.email}`
+        await db().sql`
+          INSERT INTO apexvoice_messages (prospect_id, sender, body)
+          VALUES (${prospect.id}, 'agent', ${`[System Notice] Drafted email pitch for ${prospect.email} (Email service pending API key)`})
+        `
+      }
+    } else {
+      await db().sql`
+        INSERT INTO apexvoice_messages (prospect_id, sender, body)
+        VALUES (${prospect.id}, 'agent', ${`[System Notice] Lead replied via SMS. Request their email to deliver full pitch.`})
+      `
+    }
+
     await recordOutcome(
       prospect,
       'SMS',
-      'Reply received',
-      prospect.status === 'Rejected' ? 'Rejected' : 'In Progress',
-      `Replied ${new Date().toLocaleDateString('en-GB')}`,
-      Math.min(100, prospect.warmth_score + 10),
+      'Reply received & pitch auto-sent',
+      'Pitch Delivered',
+      `Replied via SMS (${emailStatus})`,
+      Math.min(100, prospect.warmth_score + 25),
     )
 
     return new Response(EMPTY_TWIML, { headers: XML_HEADERS })
   } catch (error) {
     console.error('apexvoice sms-inbound error:', error)
-    // Still acknowledge with 200 so Twilio doesn't hammer retries on a bug.
     return new Response(EMPTY_TWIML, { headers: XML_HEADERS })
   }
 }

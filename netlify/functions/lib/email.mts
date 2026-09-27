@@ -151,3 +151,44 @@ export const nurtureDay5Email = (lead: Lead) => {
     `),
   }
 }
+
+/** ApexVoice pitch email — sent when a prospect replies to an SMS outreach campaign. */
+export const apexvoicePitchEmail = (opts: {
+  contactPerson: string
+  businessName: string
+}) => {
+  const contact = opts.contactPerson || 'there'
+  const name = opts.businessName || 'your business'
+  return {
+    subject: `Bespoke AI Audit & Automation Strategy for ${name}`,
+    html: shell(`
+      <h1 style="font-size:22px;margin:0 0 12px;color:#1e293b;">Hi ${esc(contact)}, thanks for getting in touch 👋</h1>
+      <p style="font-size:15px;color:#334155;line-height:1.6;">Thanks for replying to our message. As promised, here are the details on our <strong>Bespoke AI Business Audit & Automation Roadmap</strong> for UK small businesses.</p>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0;">
+        <h2 style="font-size:18px;margin:0 0 10px;color:#0f172a;">What’s Included in Your Custom Audit:</h2>
+        <ul style="padding-left:20px;margin:0;color:#334155;line-height:1.7;">
+          <li><strong>Workflow & Time Savings Analysis:</strong> We map your current manual tasks and pinpoint where AI can save you 15+ hours every week.</li>
+          <li><strong>Lead & Missed Call Capture Blueprint:</strong> Eliminate lost revenue by automating lead responses 24/7.</li>
+          <li><strong>15-Page Custom Strategy Roadmap:</strong> Built specifically for <strong>${esc(name)}</strong> with immediate step-by-step action items.</li>
+        </ul>
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin:20px 0;">
+        <div style="font-size:18px;font-weight:700;color:#166534;">Special Case Study Price: £47 <span style="font-size:14px;color:#16a34a;font-weight:400;">(Normally £197)</span></div>
+        <p style="font-size:14px;color:#15803d;margin:6px 0 0;"><strong>100% Money-Back Guarantee:</strong> If we can't show you at least 10 hours of weekly time savings, we will refund your £47 immediately.</p>
+      </div>
+
+      <p>${cta('Book Your AI Audit Now', `https://www.echoliftai.co.uk/`)}</p>
+
+      <p style="font-size:14px;color:#64748b;margin-top:20px;">Or simply reply directly to this email with any questions and I will get straight back to you.</p>
+
+      <p style="font-size:15px;color:#0f172a;margin-top:24px;font-weight:600;">
+        Best regards,<br/>
+        Ian Henry<br/>
+        <span style="font-weight:400;color:#64748b;font-size:14px;">Lead AI Consultant · EchoLift AI</span>
+      </p>
+    `),
+  }
+}
+

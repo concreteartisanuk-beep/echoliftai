@@ -242,3 +242,76 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// --- 30-Second AI Health Check Form & Calculation Handler ---
+(function initHealthCheckForm() {
+    const form = document.getElementById('healthCheckForm');
+    const resultsBox = document.getElementById('healthResultsBox');
+    if (!form || !resultsBox) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const bizName = document.getElementById('healthBizName')?.value || 'Your Business';
+        const industry = document.getElementById('healthIndustry')?.value || 'trade';
+        const calls = document.getElementById('healthCalls')?.value || 'medium';
+        const phone = document.getElementById('healthPhone')?.value || '';
+        const email = document.getElementById('healthEmail')?.value || '';
+        const team = document.getElementById('healthTeam')?.value || 'small';
+
+        // Calculate estimated metrics based on inputs
+        let baseHours = 12.5;
+        let baseLoss = 1200;
+
+        if (calls === 'low') { baseHours = 7.5; baseLoss = 450; }
+        else if (calls === 'medium') { baseHours = 14.5; baseLoss = 1450; }
+        else if (calls === 'high') { baseHours = 22.0; baseLoss = 2850; }
+
+        if (team === 'growing') { baseHours *= 1.3; baseLoss *= 1.4; }
+        if (team === 'solo') { baseHours *= 0.9; }
+
+        const hoursFormatted = `${baseHours.toFixed(1)} hrs`;
+        const lossFormatted = `£${Math.round(baseLoss).toLocaleString()} / mo`;
+        const savingsFormatted = `${Math.max(10, Math.round(baseHours * 0.8))} hrs / wk`;
+
+        // Update UI DOM
+        const resBizName = document.getElementById('resBizName');
+        const resHoursLost = document.getElementById('resHoursLost');
+        const resRevenueLeak = document.getElementById('resRevenueLeak');
+        const resPotentialSavings = document.getElementById('resPotentialSavings');
+        const resActionText = document.getElementById('resActionText');
+
+        if (resBizName) resBizName.textContent = bizName;
+        if (resHoursLost) resHoursLost.textContent = hoursFormatted;
+        if (resRevenueLeak) resRevenueLeak.textContent = lossFormatted;
+        if (resPotentialSavings) resPotentialSavings.textContent = savingsFormatted;
+
+        if (resActionText) {
+            resActionText.innerHTML = `<strong>Diagnostic Summary for ${bizName}:</strong> Based on ${calls === 'high' ? '15+' : calls === 'medium' ? '6-15' : '1-5'} missed inquiries/week, your business is losing approximately <strong>${hoursFormatted}</strong> per week on manual admin and missing up to <strong>${lossFormatted}</strong> in revenue. An EchoLift AI receptionist &amp; workflow automation will capture these leads 24/7.`;
+        }
+
+        resultsBox.style.display = 'block';
+        resultsBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Save lead to backend database
+        try {
+            await fetch('/api/apexvoice/prospects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    businessName: bizName,
+                    contactPerson: bizName + ' Owner',
+                    industry: industry,
+                    location: 'UK',
+                    phone: phone,
+                    email: email,
+                    painPoints: `AI Health Check Diagnostic: ${hoursFormatted} lost/wk (~${lossFormatted} revenue leak). Team: ${team}.`,
+                    source: 'AI Health Check Widget'
+                })
+            });
+        } catch (err) {
+            console.error('Lead save error:', err);
+        }
+    });
+})();
+

@@ -180,6 +180,115 @@
   </header>
 
   
+  <!-- Interactive 30-Second AI Health Check & Bottleneck Diagnostic Widget -->
+  <section class="section health-check-section" id="ai-health-check">
+    <div class="container">
+      <div class="glass-card health-check-card text-center">
+        <div class="section-badge-pill">
+          <span class="live-dot"></span> Free 30-Second Business Diagnostic
+        </div>
+        <h2 class="health-title">Check Your Business AI Health &amp; Revenue Leak Score</h2>
+        <p class="health-subtitle">Enter your business details below for an instant breakdown of your weekly time loss, missed call revenue risk, and automation opportunities.</p>
+
+        <form id="healthCheckForm" class="health-form">
+          <div class="health-form-grid">
+            <div class="form-group text-left">
+              <label for="healthBizName"><i class="fa-solid fa-building"></i> Business Name</label>
+              <input type="text" id="healthBizName" placeholder="e.g. Apex Heating &amp; Plumbing" required />
+            </div>
+
+            <div class="form-group text-left">
+              <label for="healthIndustry"><i class="fa-solid fa-wrench"></i> Trade / Industry</label>
+              <select id="healthIndustry" required>
+                <option value="plumbing">Plumbing &amp; Heating</option>
+                <option value="electrical">Electrical Contracting</option>
+                <option value="roofing">Roofing &amp; Solar</option>
+                <option value="joinery">Joinery &amp; Construction</option>
+                <option value="microcement">Microcement &amp; Surface Design</option>
+                <option value="landscaping">Landscaping &amp; Grounds</option>
+                <option value="trade">Other UK Trade / Services</option>
+                <option value="business">General Small Business</option>
+              </select>
+            </div>
+
+            <div class="form-group text-left">
+              <label for="healthCalls"><i class="fa-solid fa-phone-slash"></i> Weekly Missed Calls / Inquiries</label>
+              <select id="healthCalls" required>
+                <option value="low">1 - 5 missed calls / week (~£300 loss)</option>
+                <option value="medium" selected>6 - 15 missed calls / week (~£1,200 loss)</option>
+                <option value="high">15+ missed calls / week (~£2,500+ loss)</option>
+              </select>
+            </div>
+
+            <div class="form-group text-left">
+              <label for="healthPhone"><i class="fa-solid fa-mobile-screen"></i> Phone / WhatsApp (For Audit Report)</label>
+              <input type="tel" id="healthPhone" placeholder="07123 456789" required />
+            </div>
+
+            <div class="form-group text-left">
+              <label for="healthEmail"><i class="fa-solid fa-envelope"></i> Work Email Address</label>
+              <input type="email" id="healthEmail" placeholder="ian@yourbusiness.co.uk" required />
+            </div>
+
+            <div class="form-group text-left">
+              <label for="healthTeam"><i class="fa-solid fa-users"></i> Staff / Team Size</label>
+              <select id="healthTeam" required>
+                <option value="solo">Sole Trader (1 person)</option>
+                <option value="small" selected>Small Team (2 - 5 people)</option>
+                <option value="growing">Growing Crew (6 - 15 people)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg btn-health-submit" id="btnRunCheck">
+            <i class="fa-solid fa-bolt"></i> Run Instant 30-Second AI Health Check
+          </button>
+        </form>
+
+        <!-- Live Diagnostic Calculation Output Box -->
+        <div id="healthResultsBox" class="health-results-container" style="display: none;">
+          <div class="results-header">
+            <div class="risk-badge risk-high"><i class="fa-solid fa-triangle-exclamation"></i> HIGH REVENUE LEAK RISK</div>
+            <h3>Diagnostic Breakdown for <span id="resBizName">Your Business</span></h3>
+          </div>
+
+          <div class="results-metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <div class="metric-value text-gradient-primary" id="resHoursLost">14.5 hrs</div>
+              <div class="metric-label">Estimated Weekly Time Wasted On Admin</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-sterling-sign"></i></div>
+              <div class="metric-value text-gradient-secondary" id="resRevenueLeak">£1,450 / mo</div>
+              <div class="metric-label">Estimated Monthly Revenue Lost to Rivals</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon"><i class="fa-solid fa-shield-check"></i></div>
+              <div class="metric-value text-success" id="resPotentialSavings">12+ hrs / wk</div>
+              <div class="metric-label">Guaranteed Weekly Hours EchoLift Reclaims</div>
+            </div>
+          </div>
+
+          <div class="results-recommendation">
+            <h4><i class="fa-solid fa-lightbulb text-amber"></i> AI Consultancy Recommended Action Plan:</h4>
+            <p id="resActionText">Your business is losing significant hours returning voicemails and chasing late-night quotes. An automated AI receptionist + follow-up workflow will capture lost leads 24/7.</p>
+          </div>
+
+          <div class="results-cta-box">
+            <div class="cta-pricing-badge">Special Case Study Price: £47 <span class="old-price">£197</span></div>
+            <a href="#growth-report" class="btn btn-primary btn-lg btn-pulse" id="btnClaimAudit">
+              <i class="fa-solid fa-file-signature"></i> Claim Your £47 Bespoke AI Audit &amp; Strategy Roadmap
+            </a>
+            <p class="guarantee-text"><i class="fa-solid fa-shield-check"></i> Backed by our 10-Hour Weekly Savings Money-Back Guarantee</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Dedicated Problem Solver Section -->
   <section class="section problem-solver-section" id="problem-solver">
     <div class="container">

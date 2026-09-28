@@ -31,24 +31,18 @@ export default async () => {
       SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+        AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
       LIMIT 3
     `) as ProspectRow[]
 
-    // If no fresh prospects, seed quality trade prospects
+    // If no real prospects queued, do not send outreach to placeholder test numbers
     if (freshRows.length === 0) {
-      console.log('🌱 Seeding fresh UK trade prospects into pipeline...')
-      for (const p of SEED_PROSPECTS) {
-        await db().sql`
-          INSERT INTO apexvoice_prospects (business_name, contact_person, industry, location, phone, warmth_score, status, source)
-          VALUES (${p.business_name}, ${p.contact_person}, ${p.industry}, ${p.location}, ${p.phone}, 50, 'New', 'Directory Scraper Auto-Seed')
-        `
-      }
-      freshRows = (await db().sql`
-        SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
-        FROM apexvoice_prospects
-        WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
-        LIMIT 3
-      `) as ProspectRow[]
+      console.log('ℹ️ No real customer prospects in queue. Skipping automated outreach batch.')
+      return Response.json({
+        success: true,
+        message: 'No external customer prospects queued. Skipping batch.',
+        outreachSent: 0,
+      })
     }
 
     let sentCount = 0
@@ -61,6 +55,13 @@ export default async () => {
       const city = prospect.location || 'UK'
 
       const smsBody = `Hi ${contact}, Alex from EchoLift AI. Noticed ${biz} in ${city}. Did you know ~62% of missed trade calls go to rivals? We deploy a 24/7 AI receptionist for UK trades. Free 30s demo: https://echoliftai.co.uk/#demo`
+
+      // Extra safety check: never send outreach pitch to owner phone number
+      const phoneDigits = prospect.phone.replace(/[^0-9]/g, '')
+      if (phoneDigits.endsWith('7494867646')) {
+        console.log(`Skipping outreach pitch to owner number: ${prospect.phone}`)
+        continue
+      }
 
       const smsResult = await sendSms(prospect.phone, smsBody)
 

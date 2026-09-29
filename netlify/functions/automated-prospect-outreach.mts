@@ -1,5 +1,6 @@
 import type { Config } from '@netlify/functions'
 import { db, sendSms, recordOutcome } from './lib/apexvoice.mts'
+import { findBusinesses } from './lib/business-search.mts'
 
 interface ProspectRow {
   id: number
@@ -13,13 +14,13 @@ interface ProspectRow {
   warmth_score: number
 }
 
-// UK Trade prospects to seed if database queue is low
-const SEED_PROSPECTS = [
-  { business_name: 'Apex Heating & Plumbing London', contact_person: 'Mark Davies', industry: 'Plumbing & Heating', location: 'London', phone: '07494867646' },
-  { business_name: 'Vanguard Roofing & Solar', contact_person: 'James Wright', industry: 'Roofing', location: 'Manchester', phone: '07494867646' },
-  { business_name: 'Premier Electrical Contractors', contact_person: 'David Smith', industry: 'Electrical Services', location: 'Birmingham', phone: '07494867646' },
-  { business_name: 'Benchmark Microcement & Surface Design', contact_person: 'Alex Turner', industry: 'Microcement', location: 'Leeds', phone: '07494867646' },
-  { business_name: 'Artisan Joinery & Building UK', contact_person: 'Chris Taylor', industry: 'Construction', location: 'Bristol', phone: '07494867646' }
+// UK Trade categories and locations for automated auto-fill when pipeline runs low
+const AUTO_SEARCH_TARGETS = [
+  { industry: 'plumbing', location: 'Manchester' },
+  { industry: 'roofing', location: 'Leeds' },
+  { industry: 'electrician', location: 'Birmingham' },
+  { industry: 'building', location: 'Bristol' },
+  { industry: 'joinery', location: 'Newcastle' },
 ]
 
 export default async () => {
@@ -35,9 +36,50 @@ export default async () => {
       LIMIT 3
     `) as ProspectRow[]
 
-    // If no real prospects queued, do not send outreach to placeholder test numbers
+    // If no real prospects queued, automatically scrape & queue real UK trade businesses
     if (freshRows.length === 0) {
-      console.log('ℹ️ No real customer prospects in queue. Skipping automated outreach batch.')
+      console.log('🌱 Prospect queue low. Auto-querying UK directory for trade prospects...')
+      const target = AUTO_SEARCH_TARGETS[Math.floor(Math.random() * AUTO_SEARCH_TARGETS.length)]
+      
+      try {
+        const { businesses } = await findBusinesses(target.industry, target.location, 6)
+        
+        for (const b of businesses) {
+          if (!b.phone || b.phone.replace(/[^0-9]/g, '').endsWith('7494867646')) continue
+          
+          await db().sql`
+            INSERT INTO apexvoice_prospects (
+              business_name, contact_person, industry, location, phone, email, website, warmth_score, status, source
+            ) VALUES (
+              ${b.name},
+              ${'Manager'},
+              ${target.industry},
+              ${b.address || target.location},
+              ${b.phone},
+              ${b.email || ''},
+              ${b.website || ''},
+              50,
+              'New',
+              'Automated OpenStreetMap Search'
+            )
+          `
+        }
+
+        // Re-query fresh rows after auto-seed
+        freshRows = (await db().sql`
+          SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
+          FROM apexvoice_prospects
+          WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+            AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
+          LIMIT 3
+        `) as ProspectRow[]
+      } catch (err) {
+        console.error('Auto-prospect search error:', err)
+      }
+    }
+
+    if (freshRows.length === 0) {
+      console.log('ℹ️ No prospects available after directory lookup. Skipping batch.')
       return Response.json({
         success: true,
         message: 'No external customer prospects queued. Skipping batch.',

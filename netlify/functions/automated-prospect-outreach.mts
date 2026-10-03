@@ -33,7 +33,7 @@ export default async () => {
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
-      LIMIT 3
+      LIMIT 15
     `) as ProspectRow[]
 
     // If no real prospects queued, automatically scrape & queue real UK trade businesses
@@ -42,7 +42,7 @@ export default async () => {
       const target = AUTO_SEARCH_TARGETS[Math.floor(Math.random() * AUTO_SEARCH_TARGETS.length)]
       
       try {
-        const { businesses } = await findBusinesses(target.industry, target.location, 6)
+        const { businesses } = await findBusinesses(target.industry, target.location, 12)
         
         for (const b of businesses) {
           if (!b.phone || b.phone.replace(/[^0-9]/g, '').endsWith('7494867646')) continue
@@ -71,7 +71,7 @@ export default async () => {
           FROM apexvoice_prospects
           WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
             AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
-          LIMIT 3
+          LIMIT 15
         `) as ProspectRow[]
       } catch (err) {
         console.error('Auto-prospect search error:', err)
@@ -90,8 +90,8 @@ export default async () => {
     let sentCount = 0
     let failedCount = 0
 
-    // 2. Dispatch outreach SMS to up to 2 fresh prospects
-    for (const prospect of freshRows.slice(0, 2)) {
+    // 2. Dispatch outreach SMS to up to 10 fresh prospects per batch
+    for (const prospect of freshRows.slice(0, 10)) {
       const contact = (prospect.contact_person || 'there').split(' ')[0]
       const biz = prospect.business_name || 'your business'
       const city = prospect.location || 'UK'

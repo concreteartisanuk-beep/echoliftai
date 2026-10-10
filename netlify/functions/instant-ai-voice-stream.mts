@@ -17,7 +17,7 @@ export default async (req: Request) => {
       return new Response('Missing voice key', { status: 503 })
     }
 
-    const upstream = await fetch(`${ELEVENLABS_URL}/${encodeURIComponent(voiceId)}?optimize_streaming_latency=4`, {
+    const upstream = await fetch(`${ELEVENLABS_URL}/${encodeURIComponent(voiceId)}`, {
       method: 'POST',
       headers: {
         'xi-api-key': apiKey,
@@ -26,8 +26,8 @@ export default async (req: Request) => {
       },
       body: JSON.stringify({
         text: textParam,
-        model_id: 'eleven_flash_v2_5',
-        voice_settings: { stability: 0.4, similarity_boost: 0.8 },
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75 },
       }),
     })
 

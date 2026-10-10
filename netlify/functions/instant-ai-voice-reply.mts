@@ -45,6 +45,29 @@ export default async (req: Request) => {
       }
     }
 
+const extractCleanSummary = (factsText: string, companyName: string): string => {
+  if (!factsText || factsText.length < 20) {
+    return `quality professional services tailored to our clients' needs`
+  }
+
+  let cleaned = factsText
+    .replace(/^Website Scraped Facts:\s*/i, '')
+    .replace(/^Company Overview:\s*/i, '')
+    .replace(/^Overview:\s*/i, '')
+    .replace(/undefined/g, '')
+    .trim()
+
+  const sentences = cleaned.split(/(?<=[.!?])\s+/)
+  for (let s of sentences) {
+    s = s.trim()
+    if (s.length > 20 && !s.toLowerCase().includes('diagnostic') && !s.toLowerCase().includes('privacy') && !s.toLowerCase().includes('cookie')) {
+      return s.replace(/^At\s+[A-Za-z0-9\s]+,\s*/i, '').replace(/[#*_`]/g, '').trim()
+    }
+  }
+
+  return cleaned.slice(0, 140).replace(/[^a-zA-Z0-9 ,.-]/g, ' ').trim()
+}
+
     let aiReply = `Thank you for calling ${company}. How can I assist you with your project today?`
 
     if (userSpeech) {
@@ -61,11 +84,9 @@ export default async (req: Request) => {
       } else if (lower.includes('service') || lower.includes('do') || lower.includes('offer') || lower.includes('provide') || lower.includes('work') || lower.includes('what do you do') || lower.includes('tell me about')) {
         if (company.toLowerCase().includes('concreet')) {
           aiReply = `At Concreet, we specialize in microcement wall and floor finishes, polished concrete overlays, and bespoke surface design. How can we help with your project today?`
-        } else if (facts && facts.length > 30) {
-          const cleanFacts = facts.replace(/Company Overview:\s*/i, '').split('.')[0].trim()
-          aiReply = `At ${company}, we specialize in ${cleanFacts.slice(0, 120)}. Is there a specific service you would like to ask about?`
         } else {
-          aiReply = `At ${company}, we provide professional trade and surface design services tailored to your needs. How can we assist you today?`
+          const summary = extractCleanSummary(facts, company)
+          aiReply = `At ${company}, we specialize in ${summary}. Is there a specific service you would like to ask about?`
         }
       } else {
         aiReply = `Thank you for asking about ${company}! I will make sure ${contact} receives your message. Is there anything else I can help with?`

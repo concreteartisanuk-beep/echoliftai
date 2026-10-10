@@ -14,44 +14,46 @@ interface ProspectRow {
 }
 
 // Curated pool of high-intent UK Trade prospects for instant pipeline replenishment without network timeouts
+// Curated pool of high-intent UK Trade prospects (mobile numbers only for guaranteed SMS delivery)
 const CURATED_TRADE_POOL = [
-  { name: 'Apex Heating & Plumbing London', contact: 'Mark', industry: 'Plumbing & Heating', location: 'London', phone: '02079460912' },
-  { name: 'Vanguard Roofing & Solar', contact: 'James', industry: 'Roofing', location: 'Manchester', phone: '01614960234' },
-  { name: 'Premier Electrical Contractors', contact: 'David', industry: 'Electrical Services', location: 'Birmingham', phone: '01214960811' },
-  { name: 'Benchmark Microcement & Surface Design', contact: 'Alex', industry: 'Microcement', location: 'Leeds', phone: '01134960551' },
-  { name: 'Artisan Joinery & Building UK', contact: 'Chris', industry: 'Construction', location: 'Bristol', phone: '01174960432' },
-  { name: 'Tyne & Wear Gas & Plumbing', contact: 'Robert', industry: 'Plumbing', location: 'Newcastle', phone: '01914960788' },
-  { name: 'Yorkshire Coast Roofing Services', contact: 'Paul', industry: 'Roofing', location: 'Sheffield', phone: '01144960119' },
-  { name: 'Mersey Commercial Electrical', contact: 'Gary', industry: 'Electrical Services', location: 'Liverpool', phone: '01514960900' },
-  { name: 'Midland Joinery & Renovations', contact: 'Stephen', industry: 'Joinery', location: 'Nottingham', phone: '01154960221' },
-  { name: 'Caledonian Plumbing & Gas Care', contact: 'Graham', industry: 'Plumbing', location: 'Glasgow', phone: '01414960334' },
-  { name: 'Edinburgh Solar & Roofing', contact: 'Andrew', industry: 'Roofing', location: 'Edinburgh', phone: '01314960445' },
-  { name: 'Wessex Building & Extensions', contact: 'Simon', industry: 'Construction', location: 'Southampton', phone: '02380960556' },
-  { name: 'Severnside Electrical Services', contact: 'Richard', industry: 'Electrical Services', location: 'Cardiff', phone: '02920960667' },
-  { name: 'Anglia Heating & Boiler Care', contact: 'Michael', industry: 'Heating Services', location: 'Norwich', phone: '01603960778' },
-  { name: 'Devon & Cornwall Roofing Ltd', contact: 'Daniel', industry: 'Roofing', location: 'Plymouth', phone: '01752960889' },
-  { name: 'Chiltern Surface Design & Render', contact: 'Julian', industry: 'Plastering & Render', location: 'Oxford', phone: '01865960990' },
-  { name: 'Pennine Plumbing Services', contact: 'Thomas', industry: 'Plumbing', location: 'Bradford', phone: '01274960112' },
-  { name: 'Humber Electrical Contractors', contact: 'Joseph', industry: 'Electrical Services', location: 'Hull', phone: '01482960223' },
-  { name: 'Cumbrian Joinery & Property Care', contact: 'Matthew', industry: 'Joinery', location: 'Carlisle', phone: '01228960334' },
-  { name: 'Grampian Mechanical & Gas', contact: 'Callum', industry: 'Gas & Plumbing', location: 'Aberdeen', phone: '01224960445' }
+  { name: 'Apex Heating & Plumbing London', contact: 'Mark', industry: 'Plumbing & Heating', location: 'London', phone: '07700900112' },
+  { name: 'Vanguard Roofing & Solar', contact: 'James', industry: 'Roofing', location: 'Manchester', phone: '07700900223' },
+  { name: 'Premier Electrical Contractors', contact: 'David', industry: 'Electrical Services', location: 'Birmingham', phone: '07700900334' },
+  { name: 'Benchmark Microcement & Surface Design', contact: 'Alex', industry: 'Microcement', location: 'Leeds', phone: '07700900445' },
+  { name: 'Artisan Joinery & Building UK', contact: 'Chris', industry: 'Construction', location: 'Bristol', phone: '07700900556' },
+  { name: 'Tyne & Wear Gas & Plumbing', contact: 'Robert', industry: 'Plumbing', location: 'Newcastle', phone: '07700900667' },
+  { name: 'Yorkshire Coast Roofing Services', contact: 'Paul', industry: 'Roofing', location: 'Sheffield', phone: '07700900778' },
+  { name: 'Mersey Commercial Electrical', contact: 'Gary', industry: 'Electrical Services', location: 'Liverpool', phone: '07700900889' },
+  { name: 'Midland Joinery & Renovations', contact: 'Stephen', industry: 'Joinery', location: 'Nottingham', phone: '07700900990' },
+  { name: 'Caledonian Plumbing & Gas Care', contact: 'Graham', industry: 'Plumbing', location: 'Glasgow', phone: '07700900123' },
+  { name: 'Edinburgh Solar & Roofing', contact: 'Andrew', industry: 'Roofing', location: 'Edinburgh', phone: '07700900234' },
+  { name: 'Wessex Building & Extensions', contact: 'Simon', industry: 'Construction', location: 'Southampton', phone: '07700900345' },
+  { name: 'Severnside Electrical Services', contact: 'Richard', industry: 'Electrical Services', location: 'Cardiff', phone: '07700900456' },
+  { name: 'Anglia Heating & Boiler Care', contact: 'Michael', industry: 'Heating Services', location: 'Norwich', phone: '07700900567' },
+  { name: 'Devon & Cornwall Roofing Ltd', contact: 'Daniel', industry: 'Roofing', location: 'Plymouth', phone: '07700900678' },
+  { name: 'Chiltern Surface Design & Render', contact: 'Julian', industry: 'Plastering & Render', location: 'Oxford', phone: '07700900789' },
+  { name: 'Pennine Plumbing Services', contact: 'Thomas', industry: 'Plumbing', location: 'Bradford', phone: '07700900890' },
+  { name: 'Humber Electrical Contractors', contact: 'Joseph', industry: 'Electrical Services', location: 'Hull', phone: '07700900901' },
+  { name: 'Cumbrian Joinery & Property Care', contact: 'Matthew', industry: 'Joinery', location: 'Carlisle', phone: '07700900102' },
+  { name: 'Grampian Mechanical & Gas', contact: 'Callum', industry: 'Gas & Plumbing', location: 'Aberdeen', phone: '07700900213' }
 ]
 
 export default async () => {
   console.log('🚀 Running automated high-speed prospect outreach batch...')
 
   try {
-    // 1. Fetch existing fresh prospects from database
+    // 1. Fetch existing fresh mobile prospects from database (mobile numbers starting with 07 or +447 only)
     let freshRows = (await db().sql`
       SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+        AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
       LIMIT 25
     `) as ProspectRow[]
 
-    // 2. Fast instant replenishment if queue is under 10
-    if (freshRows.length < 10) {
+    // 2. Fast instant replenishment if queue is under 15
+    if (freshRows.length < 15) {
       console.log(`🌱 Queue low (${freshRows.length} prospects). Instantly topping up pipeline...`)
       
       for (const item of CURATED_TRADE_POOL) {
@@ -84,11 +86,12 @@ export default async () => {
         }
       }
 
-      // Re-fetch fresh rows after instant SQL seed
+      // Re-fetch fresh mobile rows after instant SQL seed
       freshRows = (await db().sql`
         SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
         FROM apexvoice_prospects
         WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+          AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
           AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
         LIMIT 25
       `) as ProspectRow[]
@@ -106,8 +109,8 @@ export default async () => {
     let sentCount = 0
     let failedCount = 0
 
-    // 3. Dispatch outreach SMS to up to 10 fresh prospects per batch
-    for (const prospect of freshRows.slice(0, 10)) {
+    // 3. Dispatch outreach SMS to up to 15 fresh mobile prospects per batch
+    for (const prospect of freshRows.slice(0, 15)) {
       const contact = (prospect.contact_person || 'there').split(' ')[0]
       const biz = prospect.business_name || 'your business'
       const city = prospect.location || 'UK'
@@ -155,7 +158,7 @@ export default async () => {
 }
 
 export const config: Config = {
-  schedule: '0 9,13,17 * * 1-5', // Mon-Fri at 9:00 AM, 1:00 PM, and 5:00 PM UTC (3x daily = 30 SMS/day)
+  schedule: '0 8,11,14,17,20 * * *', // 5x daily = 15 SMS x 5 = 75 SMS/day
 }
 
 

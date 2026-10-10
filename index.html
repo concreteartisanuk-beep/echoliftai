@@ -1027,10 +1027,6 @@
     const assistant = "74a2d264-ac9b-4943-90cf-de3dc022cc03"; // Echo Agent ID
     const apiKey = "0ebf67d6-4eca-4d1a-ab96-b7158677fc9a";   // Vapi Public Key
 
-    // --- Homepage Interactive Demo Call ---
-    let homepageVapi = null;
-    let isHomepageCallActive = false;
-
     // --- Instant AI Voice Receptionist Launcher (Browser + Outbound Phone) ---
     let homepageVapi = null;
     let isHomepageCallActive = false;
@@ -1080,13 +1076,16 @@
       }
 
       // Initialize Vapi SDK for live voice call
-      if (typeof window.Vapi === "undefined") {
-        alert("Voice engine loading. Please try again in 2 seconds.");
-        return;
-      }
-
       if (!homepageVapi) {
-        homepageVapi = new (window.Vapi.default || window.Vapi)(apiKey);
+        const VapiClass = window.Vapi?.default || window.Vapi || window.vapiSDK?.Vapi;
+        if (typeof VapiClass === "function") {
+          homepageVapi = new VapiClass(apiKey);
+        } else if (window.vapiInstance) {
+          homepageVapi = window.vapiInstance;
+        } else {
+          console.warn("Vapi SDK initializing...");
+        }
+      }
 
         homepageVapi.on("call-start", () => {
           isHomepageCallActive = true;

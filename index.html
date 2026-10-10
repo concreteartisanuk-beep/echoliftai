@@ -1043,7 +1043,9 @@
       const phone = document.getElementById("demoPhone")?.value || "";
 
       if (isHomepageCallActive) {
-        if (homepageVapi) homepageVapi.stop();
+        if (homepageVapi && typeof homepageVapi.stop === "function") {
+          homepageVapi.stop();
+        }
         return;
       }
 
@@ -1075,24 +1077,39 @@
         }
       }
 
-      // Initialize Vapi SDK for live voice call
+      // Safe Vapi instance acquisition
       if (!homepageVapi) {
-        const VapiClass = window.Vapi?.default || window.Vapi || window.vapiSDK?.Vapi;
+        let VapiClass = null;
+        if (typeof window.Vapi !== "undefined") {
+          VapiClass = window.Vapi.default || window.Vapi;
+        } else if (window.vapiSDK && window.vapiSDK.Vapi) {
+          VapiClass = window.vapiSDK.Vapi;
+        }
+
         if (typeof VapiClass === "function") {
-          homepageVapi = new VapiClass(apiKey);
+          try {
+            homepageVapi = new VapiClass(apiKey);
+          } catch (e) {
+            console.error("Vapi instantiation error:", e);
+          }
+        } else if (window.vapiSDK && typeof window.vapiSDK.start === "function") {
+          homepageVapi = window.vapiSDK;
         } else if (window.vapiInstance) {
           homepageVapi = window.vapiInstance;
-        } else {
-          console.warn("Vapi SDK initializing...");
         }
       }
+
+      if (homepageVapi && typeof homepageVapi.on === "function") {
+        homepageVapi.removeAllListeners?.();
 
         homepageVapi.on("call-start", () => {
           isHomepageCallActive = true;
           if (btnBrowser) {
             btnBrowser.classList.add("active");
-            document.getElementById("demoCallText").innerText = "End Call (Live)";
-            document.getElementById("demoWaveContainer").style.display = "flex";
+            const txt = document.getElementById("demoCallText");
+            if (txt) txt.innerText = "End Call (Live)";
+            const wave = document.getElementById("demoWaveContainer");
+            if (wave) wave.style.display = "flex";
           }
         });
 
@@ -1100,8 +1117,10 @@
           isHomepageCallActive = false;
           if (btnBrowser) {
             btnBrowser.classList.remove("connecting", "active");
-            document.getElementById("demoCallText").innerText = "Test in Browser";
-            document.getElementById("demoWaveContainer").style.display = "none";
+            const txt = document.getElementById("demoCallText");
+            if (txt) txt.innerText = "Test in Browser";
+            const wave = document.getElementById("demoWaveContainer");
+            if (wave) wave.style.display = "none";
           }
         });
 
@@ -1110,10 +1129,18 @@
           isHomepageCallActive = false;
           if (btnBrowser) {
             btnBrowser.classList.remove("connecting", "active");
-            document.getElementById("demoCallText").innerText = "Test in Browser";
-            document.getElementById("demoWaveContainer").style.display = "none";
+            const txt = document.getElementById("demoCallText");
+            if (txt) txt.innerText = "Test in Browser";
+            const wave = document.getElementById("demoWaveContainer");
+            if (wave) wave.style.display = "none";
           }
         });
+      }
+
+      if (!homepageVapi || typeof homepageVapi.start !== "function") {
+        console.warn("Vapi SDK not yet fully bound. Retrying in 1s...");
+        setTimeout(() => launchPersonalizedCall(mode), 1000);
+        return;
       }
 
       const overrides = {
@@ -1136,7 +1163,12 @@
       try {
         await homepageVapi.start(assistant, overrides);
       } catch (e) {
-        console.error("Failed to start homepage voice call:", e);
+        console.error("Failed to start voice call with overrides, trying default:", e);
+        try {
+          await homepageVapi.start(assistant);
+        } catch (err2) {
+          console.error("Default Vapi start failed:", err2);
+        }
       }
     }
 

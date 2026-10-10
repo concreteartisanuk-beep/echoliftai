@@ -119,27 +119,26 @@ export default async (req: Request) => {
 
     // 3. System Prompt & Dynamic Assistant Overrides
     const systemPrompt = `You are an automated reception assistant named Echo working 24/7 for "${company}".
-You are speaking directly over the phone with ${name}.
-Your goal is to act as ${company}'s 24/7 AI phone receptionist, greeting ${name} warmly and answering any questions about ${company} using the website factsheet below.
+You are answering phone calls on behalf of ${name} and ${company}.
+Your goal is to act as ${company}'s 24/7 AI phone receptionist, greeting callers warmly and answering questions using the website factsheet below.
 
-WEBSITE FACTSHEET FOR ${company}:
+WEBSITE KNOWLEDGE BASE FOR ${company}:
 - Company Name: ${company}
-- Owner/Contact: ${name}
+- Owner/Contact Person: ${name}
 - Website URL: ${website || 'N/A'}
-- Scraped Knowledge Base Facts: ${scrapedFacts}
+- Scraped Facts & Offerings: ${scrapedFacts}
 
 Rules:
-1. Greet the caller warmly: "Hi ${name}! Thank you for calling ${company}. I am your 24/7 EchoLift AI phone receptionist. How can I help you today?"
-2. Answer questions accurately using the factsheet above.
-3. Keep answers concise, clear, and natural (1-2 sentences per turn).
-4. Demonstrate how smooth and human-sounding EchoLift AI receptionists are.`
+1. Opening Greeting: "Hello, thank you for calling ${company}! My name is Echo, your 24/7 AI Receptionist for ${company}. How can I help you today?"
+2. When asked about services or quotes, answer concisely using the scraped website factsheet above.
+3. Keep answers clear, professional, and friendly (1-2 sentences per response).`
 
-    const firstMessage = `Hi ${name}! Thank you for calling ${company}. I am your 24/7 EchoLift AI phone receptionist. How can I help you today?`
+    const firstMessage = `Hello, thank you for calling ${company}! My name is Echo, your 24/7 AI Receptionist for ${company}. How can I help you today?`
 
-    // 4. Trigger Outbound Phone Call via Vapi API if phone number is provided
     let callTriggered = false
     let vapiResponseData: any = null
 
+    // 4. Try Vapi Outbound API
     try {
       const vapiPayload = {
         assistantId: VAPI_ASSISTANT_ID,
@@ -177,12 +176,52 @@ Rules:
       if (vapiRes.ok) {
         callTriggered = true
         vapiResponseData = await vapiRes.json().catch(() => ({}))
-      } else {
-        const errText = await vapiRes.text().catch(() => '')
-        console.error('Vapi outbound call API error:', vapiRes.status, errText)
       }
     } catch (err) {
       console.error('Vapi outbound fetch exception:', err)
+    }
+
+    // 5. Fallback to Twilio Voice API if Vapi phone trunk is not connected
+    if (!callTriggered) {
+      const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
+      const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+      const twilioFromNumber = process.env.TWILIO_FROM_NUMBER || '+441914062323'
+
+      if (twilioAccountSid && twilioAuthToken) {
+        try {
+          const twiml = `<Response>
+            <Say voice="Polly.Amy" language="en-GB">
+              Hello ${name}! Thank you for calling ${company}. My name is Echo, your 24/7 AI Receptionist for ${company}. We have scraped your website ${website || company} and built your custom AI knowledge base. Visit echoliftai.co.uk to claim your full audit package.
+            </Say>
+          </Response>`
+
+          const authHeader = 'Basic ' + Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString('base64')
+          const twilioRes = await fetch(
+            `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Calls.json`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: authHeader,
+                'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: new URLSearchParams({
+                To: e164Phone,
+                From: twilioFromNumber,
+                Twiml: twiml,
+              }),
+            }
+          )
+
+          if (twilioRes.ok) {
+            callTriggered = true
+            console.log(`Twilio Voice outbound call triggered to ${e164Phone}`)
+          } else {
+            console.error('Twilio Voice call failed:', twilioRes.status, await twilioRes.text())
+          }
+        } catch (err) {
+          console.error('Twilio Voice call exception:', err)
+        }
+      }
     }
 
     return Response.json(

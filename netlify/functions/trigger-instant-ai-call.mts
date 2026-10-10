@@ -149,6 +149,12 @@ Rules:
         },
         assistantOverrides: {
           firstMessage: firstMessage,
+          voice: {
+            provider: '11labs',
+            voiceId: 'Xb7hH2yqWyRel9GQ555e',
+            stability: 0.5,
+            similarityBoost: 0.75,
+          },
           model: {
             provider: 'openai',
             model: 'gpt-4o-mini',
@@ -181,7 +187,7 @@ Rules:
       console.error('Vapi outbound fetch exception:', err)
     }
 
-    // 5. Fallback to Twilio Voice API if Vapi phone trunk is not connected
+    // 5. Fallback to Twilio Voice API with ElevenLabs ultra-realistic human voice stream
     if (!callTriggered) {
       const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
       const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
@@ -189,10 +195,11 @@ Rules:
 
       if (twilioAccountSid && twilioAuthToken) {
         try {
+          const spokenText = `Hello ${name}! Thank you for calling ${company} today. My name is Echo, your 24/7 AI Receptionist for ${company}. We have scraped your website ${website || company} and configured your custom AI knowledge base. Visit echoliftai.co.uk to claim your full audit package.`
+          const audioStreamUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(spokenText)}`
+
           const twiml = `<Response>
-            <Say voice="Polly.Amy" language="en-GB">
-              Hello ${name}! Thank you for calling ${company}. My name is Echo, your 24/7 AI Receptionist for ${company}. We have scraped your website ${website || company} and built your custom AI knowledge base. Visit echoliftai.co.uk to claim your full audit package.
-            </Say>
+            <Play>${audioStreamUrl}</Play>
           </Response>`
 
           const authHeader = 'Basic ' + Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString('base64')

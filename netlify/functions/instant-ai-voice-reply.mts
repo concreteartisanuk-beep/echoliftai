@@ -49,19 +49,12 @@ export default async (req: Request) => {
   if (userSpeech) {
     const lower = userSpeech.toLowerCase()
 
-    // 1. Fast path: Instant keyword matching from scraped facts (< 5ms response time)
-    if (lower.includes('service') || lower.includes('do') || lower.includes('offer') || lower.includes('provide') || lower.includes('work')) {
-      const snippet = facts.slice(0, 180).replace(/[^a-zA-Z0-9 ,.-]/g, ' ').trim()
-      aiReply = `At ${company}, we specialize in ${snippet || 'quality professional services'}. Is there a specific service you would like to ask about?`
-    } else if (lower.includes('quote') || lower.includes('cost') || lower.includes('price') || lower.includes('estimate') || lower.includes('fee')) {
-      aiReply = `We offer free tailored quotes for all projects at ${company}. Would you like me to book a callback with ${contact}?`
-    } else if (lower.includes('where') || lower.includes('location') || lower.includes('based') || lower.includes('area') || lower.includes('address')) {
-      aiReply = `${company} serves customers across the UK. How can we help you today?`
-    } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
-      aiReply = `Hello! I am Echo, your AI Receptionist for ${company}. How can I help you today?`
+    // Fast conversational responses for common greetings
+    if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+      aiReply = `Hello! Thank you for calling ${company}. My name is Echo, how can I help you today?`
     } else {
-      // 2. Fallback path: Model generation for open-ended queries
-      const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering calls for "${company}".
+      // AI response generation using scraped factsheet
+      const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering phone calls for "${company}".
 Greeting used: "Thank you for calling ${company}, my name is Echo, how may I help you?"
 Owner: ${contact}
 
@@ -69,17 +62,27 @@ WEBSITE KNOWLEDGE BASE FOR ${company}:
 ${facts}
 
 Rules:
-1. Answer the caller's query directly and concisely (1-2 sentences maximum).
-2. Sound like an authentic, highly professional receptionist for ${company}.
-3. Do not include markdown or formatting.
-4. Output valid JSON: { "reply": "Your concise response here" }`
+1. Answer the caller's query directly in 1-2 natural, spoken sentences (maximum 25 words).
+2. NEVER read out raw website menus, HTML tags, or button titles word-for-word. Summarize naturally.
+3. Speak in clean, professional, friendly English as an authentic receptionist.
+4. Output valid JSON: { "reply": "Your clean spoken response here" }`
 
       const userPrompt = `Caller asked: "${userSpeech}"`
-      const aiRes = await generateJson<{ reply: string }>(systemPrompt, userPrompt, 80)
+      const aiRes = await generateJson<{ reply: string }>(systemPrompt, userPrompt, 90)
+
       if (aiRes && aiRes.reply) {
         aiReply = aiRes.reply.replace(/[#*_`]/g, '').trim()
       } else {
-        aiReply = `Thank you for contacting ${company}. I will make sure ${contact} receives your message. Is there anything else I can help with?`
+        // Natural fallback answers without raw HTML dumping
+        if (lower.includes('service') || lower.includes('do') || lower.includes('offer') || lower.includes('provide') || lower.includes('work')) {
+          aiReply = `At ${company}, we provide professional services tailored to our clients' needs. How can we help you with your upcoming project?`
+        } else if (lower.includes('quote') || lower.includes('cost') || lower.includes('price') || lower.includes('estimate') || lower.includes('fee')) {
+          aiReply = `We offer free customized quotes for all our services at ${company}. Would you like me to book a callback with ${contact}?`
+        } else if (lower.includes('where') || lower.includes('location') || lower.includes('based') || lower.includes('area') || lower.includes('address')) {
+          aiReply = `${company} serves customers across the UK. How can we assist you today?`
+        } else {
+          aiReply = `Thank you for reaching out to ${company}! I will make sure ${contact} receives your message. Is there anything else I can help with?`
+        }
       }
     }
   }

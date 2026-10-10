@@ -5,17 +5,29 @@ const VAPI_API_KEY = process.env.VAPI_API_KEY || '0ebf67d6-4eca-4d1a-ab96-b71586
 const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID || '74a2d264-ac9b-4943-90cf-de3dc022cc03'
 const VAPI_PHONE_NUMBER_ID = process.env.VAPI_PHONE_NUMBER_ID || ''
 
-/** Clean text scraped from HTML body */
+/** Clean text scraped from HTML body, stripping menus, headers, scripts, and buttons */
 const cleanHtmlText = (html: string): string => {
-  return html
-    .replace(/<script\b[^<]*>([\s\S]*?)<\/script>/gi, '')
-    .replace(/<style\b[^<]*>([\s\S]*?)<\/style>/gi, '')
-    .replace(/<header\b[^<]*>([\s\S]*?)<\/header>/gi, '')
-    .replace(/<footer\b[^<]*>([\s\S]*?)<\/footer>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 1500)
+  // 1. Extract meta description if present
+  const metaMatch = html.match(/<meta\s+(?:name|property)=["'](?:description|og:description)["']\s+content=["'](.*?)["']/i)
+  const metaDesc = metaMatch ? metaMatch[1].trim() : ''
+
+  // 2. Extract paragraph and heading contents
+  const textBlocks: string[] = []
+  if (metaDesc) textBlocks.push(`Company Overview: ${metaDesc}`)
+
+  const paragraphMatches = html.match(/<(?:p|h1|h2|h3)\b[^>]*>([\s\S]*?)<\/(?:p|h1|h2|h3)>/gi) || []
+  for (const block of paragraphMatches) {
+    const text = block
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+    if (text.length > 25 && !/cookie|copyright|rights reserved|privacy policy|terms|sign in|login|diagnostic/i.test(text)) {
+      textBlocks.push(text)
+    }
+  }
+
+  const combined = textBlocks.join('. ').slice(0, 1000)
+  return combined.length > 30 ? combined : 'General professional services and customer care.'
 }
 
 /** Fast website content scraper with strict deadline */

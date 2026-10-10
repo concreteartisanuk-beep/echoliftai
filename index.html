@@ -1031,148 +1031,101 @@
     let homepageVapi = null;
     let isHomepageCallActive = false;
 
-    // --- Instant Outbound Phone Call Trigger ---
-    const btnOutbound = document.getElementById("btnOutboundPhoneCall");
-    if (btnOutbound) {
-      btnOutbound.addEventListener("click", async () => {
-        const icon = document.getElementById("outboundCallIcon");
-        const text = document.getElementById("outboundCallText");
-        const statusBox = document.getElementById("outboundCallStatus");
-        const statusMsg = document.getElementById("outboundStatusMsg");
+    // --- Instant AI Voice Receptionist Launcher (Browser + Outbound Phone) ---
+    let homepageVapi = null;
+    let isHomepageCallActive = false;
 
-        const name = document.getElementById("demoContactName")?.value || "there";
-        const company = document.getElementById("demoBizName")?.value || "Your Business";
-        const website = document.getElementById("demoWebsite")?.value || "";
-        const phone = document.getElementById("demoPhone")?.value || "";
+    async function launchPersonalizedCall(mode) {
+      const btnOutbound = document.getElementById("btnOutboundPhoneCall");
+      const btnBrowser = document.getElementById("btnHomepageCall");
+      const statusBox = document.getElementById("outboundCallStatus");
+      const statusMsg = document.getElementById("outboundStatusMsg");
 
-        if (!phone) {
-          alert("Please enter a valid telephone/mobile number.");
-          return;
-        }
-
-        btnOutbound.disabled = true;
-        icon.className = "fa-solid fa-circle-notch fa-spin";
-        text.innerText = "Initiating Call...";
-        if (statusBox) statusBox.style.display = "block";
-        if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-magnifying-glass-chart"></i> Inspecting ${website || company} &amp; triggering AI voice agent call...`;
-
-        try {
-          const res = await fetch('/api/trigger-instant-ai-call', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, company, website, phone })
-          });
-          const data = await res.json();
-
-          if (data.success) {
-            icon.className = "fa-solid fa-phone-arrow-up-right";
-            text.innerText = "Calling Mobile Now!";
-            if (statusMsg) {
-              statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> <strong>Call Dispatched to ${data.phone}:</strong> Scraped website knowledge base for ${company}. Please answer your phone now!`;
-            }
-          } else {
-            throw new Error(data.error || "Failed to launch call");
-          }
-        } catch (err) {
-          console.error("Outbound call error:", err);
-          alert("Could not dispatch phone call: " + err.message);
-          icon.className = "fa-solid fa-phone-volume";
-          text.innerText = "Call My Phone Now with AI";
-          if (statusBox) statusBox.style.display = "none";
-        } finally {
-          setTimeout(() => { btnOutbound.disabled = false; }, 5000);
-        }
-      });
-    }
-
-    document.getElementById("btnHomepageCall").addEventListener("click", async () => {
-      const btn = document.getElementById("btnHomepageCall");
-      const icon = document.getElementById("demoCallIcon");
-      const text = document.getElementById("demoCallText");
-      const wave = document.getElementById("demoWaveContainer");
+      const name = document.getElementById("demoContactName")?.value || "there";
+      const company = document.getElementById("demoBizName")?.value || "Your Business";
+      const website = document.getElementById("demoWebsite")?.value || "";
+      const phone = document.getElementById("demoPhone")?.value || "";
 
       if (isHomepageCallActive) {
         if (homepageVapi) homepageVapi.stop();
         return;
       }
 
-      // 1. Instant Visual Feedback so the user knows it is connecting immediately
-      btn.classList.add("connecting");
-      icon.className = "fa-solid fa-circle-notch fa-spin";
-      text.innerText = "Connecting to AI...";
+      if (statusBox) statusBox.style.display = "block";
+      if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-magnifying-glass-chart fa-spin"></i> Inspecting ${website || company} &amp; building custom AI Knowledge Base...`;
+
+      let callData = null;
+      try {
+        const res = await fetch('/api/trigger-instant-ai-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, company, website, phone })
+        });
+        callData = await res.json();
+      } catch (err) {
+        console.error("API call error:", err);
+      }
+
+      const systemPrompt = callData?.systemPrompt || `You are an automated reception assistant named Echo working 24/7 for "${company}". Greet caller ${name} warmly and answer questions using facts about ${company}.`;
+      const firstMsg = callData?.firstMessage || `Hi ${name}! Thank you for calling ${company}. I am your 24/7 EchoLift AI phone receptionist. How can I help you today?`;
+
+      if (callData?.callTriggered) {
+        if (statusMsg) {
+          statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> <strong>Outbound Phone Call Sent to ${callData.phone}:</strong> Scraped website knowledge base for ${company}. Answer your phone now!`;
+        }
+      } else {
+        if (statusMsg) {
+          statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> <strong>Website Knowledge Base Ready for ${company}:</strong> Starting live AI receptionist voice call in browser now...`;
+        }
+      }
+
+      // Initialize Vapi SDK for live voice call
+      if (typeof window.Vapi === "undefined") {
+        alert("Voice engine loading. Please try again in 2 seconds.");
+        return;
+      }
 
       if (!homepageVapi) {
-        if (typeof window.Vapi === "undefined") {
-          alert("Vapi SDK is still loading. Please wait a moment.");
-          btn.classList.remove("connecting");
-          icon.className = "fa-solid fa-phone";
-          text.innerText = "Talk to AI Assistant";
-          return;
-        }
         homepageVapi = new (window.Vapi.default || window.Vapi)(apiKey);
 
         homepageVapi.on("call-start", () => {
           isHomepageCallActive = true;
-          btn.classList.remove("connecting");
-          btn.classList.add("active");
-          icon.className = "fa-solid fa-phone-slash";
-          text.innerText = "End Call (Live)";
-          wave.style.display = "flex";
+          if (btnBrowser) {
+            btnBrowser.classList.add("active");
+            document.getElementById("demoCallText").innerText = "End Call (Live)";
+            document.getElementById("demoWaveContainer").style.display = "flex";
+          }
         });
 
         homepageVapi.on("call-end", () => {
           isHomepageCallActive = false;
-          btn.classList.remove("connecting", "active");
-          icon.className = "fa-solid fa-phone";
-          text.innerText = "Talk to AI Assistant";
-          wave.style.display = "none";
+          if (btnBrowser) {
+            btnBrowser.classList.remove("connecting", "active");
+            document.getElementById("demoCallText").innerText = "Test in Browser";
+            document.getElementById("demoWaveContainer").style.display = "none";
+          }
         });
 
         homepageVapi.on("error", (e) => {
           console.error("Vapi Error:", e);
-          alert("Failed to connect to the Voice Assistant. Please ensure your microphone is enabled.");
           isHomepageCallActive = false;
-          btn.classList.remove("connecting", "active");
-          icon.className = "fa-solid fa-phone";
-          text.innerText = "Talk to AI Assistant";
-          wave.style.display = "none";
+          if (btnBrowser) {
+            btnBrowser.classList.remove("connecting", "active");
+            document.getElementById("demoCallText").innerText = "Test in Browser";
+            document.getElementById("demoWaveContainer").style.display = "none";
+          }
         });
       }
 
-      const bizName = document.getElementById("demoBizName").value || "Your Business";
-      const bizNiche = document.getElementById("demoNiche").value || "general services";
-      const bizCity = document.getElementById("demoCity").value || "your local area";
-      const bizUsp = document.getElementById("demoUsp").value || "professional quality work";
-
-      const nicheTitle = bizNiche.charAt(0).toUpperCase() + bizNiche.slice(1);
-
-      // Ultra-low latency configuration for sub-second responses
       const overrides = {
         firstMessageMode: "assistant-speaks-first",
-        firstMessage: `Hi! Thank you for calling ${bizName}. I am your EchoLift AI assistant. How can I help you today?`,
+        firstMessage: firstMsg,
         model: {
           provider: "openai",
           model: "gpt-4o-mini",
           temperature: 0.3,
-          maxTokens: 90,
-          messages: [
-            {
-              role: "system",
-              content: `You are an automated reception assistant named Echo working 24/7 for "${bizName}" in ${bizCity}. 
-Your goal is to be warm, concise, and ultra-responsive. Keep every answer under 2 sentences.
-
-Business Info:
-- Name: ${bizName}
-- Industry: ${nicheTitle} / ${bizNiche}
-- Location: ${bizCity}
-- Highlight: ${bizUsp}
-
-Rules:
-1. Greet the caller using: "${bizName}".
-2. Offer to book a callback. Gather their name and phone number briefly.
-3. Keep answers very short and direct for fast voice conversation.`
-            }
-          ]
+          maxTokens: 100,
+          messages: [{ role: "system", content: systemPrompt }]
         },
         transcriber: {
           provider: "deepgram",
@@ -1184,46 +1137,19 @@ Rules:
       try {
         await homepageVapi.start(assistant, overrides);
       } catch (e) {
-        console.error("Failed to start Vapi:", e);
-        btn.classList.remove("connecting");
-        icon.className = "fa-solid fa-phone";
-        text.innerText = "Talk to AI Assistant";
+        console.error("Failed to start homepage voice call:", e);
       }
-        } catch (e) {
-          console.error("Failed to start Vapi:", e);
-        }
-      }
-    });
+    }
 
-    const isMobileWindow = window.innerWidth <= 768;
+    const btnOutbound = document.getElementById("btnOutboundPhoneCall");
+    if (btnOutbound) {
+      btnOutbound.addEventListener("click", () => launchPersonalizedCall("phone"));
+    }
 
-    const buttonConfig = {
-      position: "bottom-right",
-      offset: isMobileWindow ? "16px" : "40px",
-      width: "56px",
-      height: "56px",
-      idle: {
-        color: "rgb(99, 102, 241)",
-        type: "pill",
-        title: isMobileWindow ? "Talk to Echo" : "Talk to Echo AI",
-        subtitle: isMobileWindow ? "" : "Ask us anything — live",
-        icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone.svg",
-      },
-      loading: {
-        color: "rgb(139, 92, 246)",
-        type: "pill",
-        title: isMobileWindow ? "Connecting..." : "Connecting to Echo...",
-        subtitle: isMobileWindow ? "" : "Please wait",
-        icon: "https://unpkg.com/lucide-static@0.321.0/icons/loader-2.svg",
-      },
-      active: {
-        color: "rgb(239, 68, 68)",
-        type: "pill",
-        title: isMobileWindow ? "End Call" : "Live call in progress",
-        subtitle: isMobileWindow ? "" : "Click to end call",
-        icon: "https://unpkg.com/lucide-static@0.321.0/icons/phone-off.svg",
-      },
-    };
+    const btnBrowser = document.getElementById("btnHomepageCall");
+    if (btnBrowser) {
+      btnBrowser.addEventListener("click", () => launchPersonalizedCall("browser"));
+    }
 
     (function (d, t) {
       var g = document.createElement(t),

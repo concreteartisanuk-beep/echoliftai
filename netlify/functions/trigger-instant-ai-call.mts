@@ -204,7 +204,7 @@ Rules:
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Play>${audioStreamUrl}</Play>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="1" timeout="2" hints="services, quote, pricing, cost, location, contact, phone, opening hours, estimate">
   </Gather>
 </Response>`
 

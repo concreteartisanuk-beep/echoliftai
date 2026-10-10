@@ -47,7 +47,21 @@ export default async (req: Request) => {
   let aiReply = `Thank you for asking about ${company}. How else can I assist you today?`
 
   if (userSpeech) {
-    const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering calls for "${company}".
+    const lower = userSpeech.toLowerCase()
+
+    // 1. Fast path: Instant keyword matching from scraped facts (< 5ms response time)
+    if (lower.includes('service') || lower.includes('do') || lower.includes('offer') || lower.includes('provide') || lower.includes('work')) {
+      const snippet = facts.slice(0, 180).replace(/[^a-zA-Z0-9 ,.-]/g, ' ').trim()
+      aiReply = `At ${company}, we specialize in ${snippet || 'quality professional services'}. Is there a specific service you would like to ask about?`
+    } else if (lower.includes('quote') || lower.includes('cost') || lower.includes('price') || lower.includes('estimate') || lower.includes('fee')) {
+      aiReply = `We offer free tailored quotes for all projects at ${company}. Would you like me to book a callback with ${contact}?`
+    } else if (lower.includes('where') || lower.includes('location') || lower.includes('based') || lower.includes('area') || lower.includes('address')) {
+      aiReply = `${company} serves customers across the UK. How can we help you today?`
+    } else if (lower.includes('hello') || lower.includes('hi') || lower.includes('hey')) {
+      aiReply = `Hello! I am Echo, your AI Receptionist for ${company}. How can I help you today?`
+    } else {
+      // 2. Fallback path: Model generation for open-ended queries
+      const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering calls for "${company}".
 Greeting used: "Thank you for calling ${company}, my name is Echo, how may I help you?"
 Owner: ${contact}
 
@@ -60,22 +74,12 @@ Rules:
 3. Do not include markdown or formatting.
 4. Output valid JSON: { "reply": "Your concise response here" }`
 
-    const userPrompt = `Caller asked: "${userSpeech}"`
-
-    const aiRes = await generateJson<{ reply: string }>(systemPrompt, userPrompt, 150)
-    if (aiRes && aiRes.reply) {
-      aiReply = aiRes.reply.replace(/[#*_`]/g, '').trim()
-    } else {
-      // Intelligent fallback using facts
-      const lower = userSpeech.toLowerCase()
-      if (lower.includes('service') || lower.includes('do') || lower.includes('offer') || lower.includes('provide')) {
-        aiReply = `At ${company}, we offer professional services tailored to your needs. You can learn more on our website or I can have ${contact} contact you directly.`
-      } else if (lower.includes('quote') || lower.includes('cost') || lower.includes('price')) {
-        aiReply = `We provide customized quotes for every project at ${company}. Would you like me to note your contact details for a free estimate?`
-      } else if (lower.includes('where') || lower.includes('location') || lower.includes('based')) {
-        aiReply = `${company} serves customers across the UK. How can we help with your upcoming project?`
+      const userPrompt = `Caller asked: "${userSpeech}"`
+      const aiRes = await generateJson<{ reply: string }>(systemPrompt, userPrompt, 80)
+      if (aiRes && aiRes.reply) {
+        aiReply = aiRes.reply.replace(/[#*_`]/g, '').trim()
       } else {
-        aiReply = `Thank you for reaching out to ${company}! I will make sure ${contact} receives your message. Is there anything else I can help with?`
+        aiReply = `Thank you for contacting ${company}. I will make sure ${contact} receives your message. Is there anything else I can help with?`
       }
     }
   }
@@ -85,7 +89,7 @@ Rules:
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Play>${audioUrl}</Play>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${prospectId || ''}" speechTimeout="auto" timeout="4">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${prospectId || ''}" speechTimeout="1" timeout="2" hints="services, quote, pricing, cost, location, contact, phone, opening hours, estimate">
   </Gather>
 </Response>`
 

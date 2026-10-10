@@ -115,53 +115,56 @@
       <!-- Interactive Demo Widget & Dashboard Showcase -->
       <div class="hero-visual-grid fade-in-up delay-4">
         <div class="demo-widget-container">
-          <h3><i class="fa-solid fa-microphone text-gradient-primary"></i> Try Echo AI Voice Agent Live</h3>
-          <p class="demo-intro">Test our human-sounding UK AI Voice Assistant right in your browser.</p>
+          <h3><i class="fa-solid fa-robot text-gradient-primary"></i> Test AI Phone Receptionist &amp; Website Reader Live</h3>
+          <p class="demo-intro">Enter your details below — our AI will instantly scrape your website, build a custom knowledge base, and call your phone to demonstrate your new 24/7 AI Receptionist.</p>
           
           <div class="demo-form">
             <div class="form-row">
               <div class="form-group">
-                <label for="demoBizName">Business Name</label>
-                <input type="text" id="demoBizName" placeholder="e.g. Katherine's Florist" value="Katherine's Florist" />
+                <label for="demoContactName"><i class="fa-solid fa-user"></i> Your Name</label>
+                <input type="text" id="demoContactName" placeholder="e.g. Mark Davies" value="Ian Henry" />
               </div>
               
               <div class="form-group">
-                <label for="demoNiche">Niche / Industry</label>
-                <select id="demoNiche">
-                  <option value="florist">Flower Shop / Florist</option>
-                  <option value="plumbing">Plumbing &amp; Heating</option>
-                  <option value="landscaping">Garden Landscaping</option>
-                  <option value="roofing">Roofing Services</option>
-                  <option value="dental">Dental Clinic</option>
-                  <option value="cafe">Cafe / Coffee Shop</option>
-                  <option value="gym">Gym &amp; Fitness Center</option>
-                  <option value="generic">Other / General</option>
-                </select>
+                <label for="demoBizName"><i class="fa-solid fa-building"></i> Business Name</label>
+                <input type="text" id="demoBizName" placeholder="e.g. Apex Heating &amp; Plumbing" value="EchoLift AI" />
               </div>
             </div>
             
             <div class="form-row">
               <div class="form-group">
-                <label for="demoCity">City / Location</label>
-                <input type="text" id="demoCity" placeholder="e.g. London" value="London" />
+                <label for="demoWebsite"><i class="fa-solid fa-globe"></i> Website URL (Scrapes Knowledge Base)</label>
+                <input type="url" id="demoWebsite" placeholder="https://yourbusiness.co.uk" value="https://echoliftai.co.uk" />
               </div>
               
               <div class="form-group">
-                <label for="demoUsp">Special Feature / USP</label>
-                <input type="text" id="demoUsp" placeholder="e.g. Same-day delivery" value="Free delivery &amp; open 24/7" />
+                <label for="demoPhone"><i class="fa-solid fa-mobile-screen"></i> Mobile / Phone Number</label>
+                <input type="tel" id="demoPhone" placeholder="07123 456789" value="07494867646" />
               </div>
             </div>
 
-            <button type="button" class="btn btn-primary btn-demo-call" id="btnHomepageCall">
-              <i class="fa-solid fa-phone" id="demoCallIcon"></i>
-              <span id="demoCallText">Talk to AI Assistant</span>
-              <div class="wave-container" id="demoWaveContainer" style="display: none;">
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-                <div class="wave-bar"></div>
-              </div>
-            </button>
+            <div class="demo-action-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.25rem;">
+              <button type="button" class="btn btn-primary btn-demo-call" id="btnOutboundPhoneCall" style="flex: 1; min-width: 220px;">
+                <i class="fa-solid fa-phone-volume" id="outboundCallIcon"></i>
+                <span id="outboundCallText">Call My Phone Now with AI</span>
+              </button>
+              
+              <button type="button" class="btn btn-secondary btn-demo-call" id="btnHomepageCall" style="flex: 1; min-width: 180px;">
+                <i class="fa-solid fa-desktop" id="demoCallIcon"></i>
+                <span id="demoCallText">Test in Browser</span>
+                <div class="wave-container" id="demoWaveContainer" style="display: none;">
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                </div>
+              </button>
+            </div>
+
+            <div id="outboundCallStatus" class="outbound-status-box" style="display: none; margin-top: 1rem; padding: 0.85rem 1.25rem; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; font-size: 0.9rem; color: #a5b4fc; text-align: center;">
+              <span class="status-icon"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+              <span class="status-msg" id="outboundStatusMsg">Scraping website &amp; calling your mobile now... Answer your phone!</span>
+            </div>
           </div>
         </div>
 
@@ -1027,6 +1030,60 @@
     // --- Homepage Interactive Demo Call ---
     let homepageVapi = null;
     let isHomepageCallActive = false;
+
+    // --- Instant Outbound Phone Call Trigger ---
+    const btnOutbound = document.getElementById("btnOutboundPhoneCall");
+    if (btnOutbound) {
+      btnOutbound.addEventListener("click", async () => {
+        const icon = document.getElementById("outboundCallIcon");
+        const text = document.getElementById("outboundCallText");
+        const statusBox = document.getElementById("outboundCallStatus");
+        const statusMsg = document.getElementById("outboundStatusMsg");
+
+        const name = document.getElementById("demoContactName")?.value || "there";
+        const company = document.getElementById("demoBizName")?.value || "Your Business";
+        const website = document.getElementById("demoWebsite")?.value || "";
+        const phone = document.getElementById("demoPhone")?.value || "";
+
+        if (!phone) {
+          alert("Please enter a valid telephone/mobile number.");
+          return;
+        }
+
+        btnOutbound.disabled = true;
+        icon.className = "fa-solid fa-circle-notch fa-spin";
+        text.innerText = "Initiating Call...";
+        if (statusBox) statusBox.style.display = "block";
+        if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-magnifying-glass-chart"></i> Inspecting ${website || company} &amp; triggering AI voice agent call...`;
+
+        try {
+          const res = await fetch('/api/trigger-instant-ai-call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, company, website, phone })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            icon.className = "fa-solid fa-phone-arrow-up-right";
+            text.innerText = "Calling Mobile Now!";
+            if (statusMsg) {
+              statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-success"></i> <strong>Call Dispatched to ${data.phone}:</strong> Scraped website knowledge base for ${company}. Please answer your phone now!`;
+            }
+          } else {
+            throw new Error(data.error || "Failed to launch call");
+          }
+        } catch (err) {
+          console.error("Outbound call error:", err);
+          alert("Could not dispatch phone call: " + err.message);
+          icon.className = "fa-solid fa-phone-volume";
+          text.innerText = "Call My Phone Now with AI";
+          if (statusBox) statusBox.style.display = "none";
+        } finally {
+          setTimeout(() => { btnOutbound.disabled = false; }, 5000);
+        }
+      });
+    }
 
     document.getElementById("btnHomepageCall").addEventListener("click", async () => {
       const btn = document.getElementById("btnHomepageCall");

@@ -479,6 +479,21 @@
                       <button class="btn btn-primary btn-block btn-lg" id="start-simulation-btn">
                         <i data-lucide="phone"></i> Start Simulated Outbound Call
                       </button>
+
+                      <div class="dialer-inputs-divider" style="margin: 1.5rem 0 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; text-align: left;">
+                        <h5 style="color: #6366f1; margin-bottom: 0.5rem; font-size: 0.9rem;"><i data-lucide="globe"></i> Real Outbound Call &amp; Web Reader</h5>
+                        <div class="form-group text-left" style="margin-bottom: 0.75rem;">
+                          <label for="portal-outbound-website">Website URL to Scrape</label>
+                          <input type="url" id="portal-outbound-website" placeholder="https://prospectwebsite.co.uk" class="sim-dropdown" style="background: rgba(15, 23, 42, 0.6); color: #fff; padding: 0.6rem 0.8rem;" />
+                        </div>
+                        <div class="form-group text-left" style="margin-bottom: 0.75rem;">
+                          <label for="portal-outbound-phone">Target Phone Number</label>
+                          <input type="tel" id="portal-outbound-phone" placeholder="07123 456789" class="sim-dropdown" style="background: rgba(15, 23, 42, 0.6); color: #fff; padding: 0.6rem 0.8rem;" />
+                        </div>
+                        <button class="btn btn-secondary btn-block btn-lg" id="portal-instant-outbound-btn" type="button">
+                          <i data-lucide="phone-outgoing"></i> Dispatch Instant AI Call to Phone
+                        </button>
+                      </div>
                     </div>
                   </div>
 

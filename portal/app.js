@@ -96,6 +96,51 @@ function hideBanner() {
 
 // --- INITIALIZE APPLICATION ---
 document.addEventListener('DOMContentLoaded', async () => {
+  // Outbound Phone Call Trigger from Portal
+  setTimeout(() => {
+    const portalOutboundBtn = document.getElementById('portal-instant-outbound-btn');
+    if (portalOutboundBtn) {
+      portalOutboundBtn.addEventListener('click', async () => {
+        const website = document.getElementById('portal-outbound-website')?.value || '';
+        const phone = document.getElementById('portal-outbound-phone')?.value || '';
+
+        if (!phone) {
+          alert('Please enter a target telephone/mobile number.');
+          return;
+        }
+
+        portalOutboundBtn.disabled = true;
+        portalOutboundBtn.innerText = 'Scraping Website & Dialing...';
+
+        try {
+          const res = await fetch('/api/trigger-instant-ai-call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: 'Prospect',
+              company: 'Client Business',
+              website: website,
+              phone: phone
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`Instant AI Call Dispatched to ${data.phone}! Website facts scraped and voice agent is calling now.`);
+          } else {
+            alert(`Could not launch call: ${data.error || 'API error'}`);
+          }
+        } catch (err) {
+          console.error('Portal outbound call error:', err);
+          alert('Failed to dispatch call: ' + err.message);
+        } finally {
+          portalOutboundBtn.disabled = false;
+          portalOutboundBtn.innerHTML = '<i data-lucide="phone-outgoing"></i> Dispatch Instant AI Call to Phone';
+          if (window.lucide) window.lucide.createIcons();
+        }
+      });
+    }
+  }, 1000);
+
   lucide.createIcons();
   setupNavigation();
   setupEventListeners();

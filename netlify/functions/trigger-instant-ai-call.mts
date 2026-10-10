@@ -91,19 +91,21 @@ export default async (req: Request) => {
     const scrapedFacts = await scrapeWebsiteFacts(website)
 
     // 2. Save lead into database
+    let prospectId: number | null = null
     try {
       const [prospect] = (await db().sql`
         INSERT INTO apexvoice_prospects (
           business_name, contact_person, industry, location, phone, website, pain_points, warmth_score, status, source
         ) VALUES (
           ${company}, ${name}, 'Instant AI Demo', 'UK', ${e164Phone}, ${website},
-          ${`Website Scraped Facts: ${scrapedFacts.slice(0, 300)}`},
+          ${`Website Scraped Facts: ${scrapedFacts.slice(0, 500)}`},
           90, 'Instant Call Requested', 'Live Website Demo'
         )
         RETURNING *
       `) as ProspectRow[]
 
       if (prospect) {
+        prospectId = prospect.id
         await recordOutcome(
           prospect,
           'Voice Call',
@@ -118,22 +120,22 @@ export default async (req: Request) => {
     }
 
     // 3. System Prompt & Dynamic Assistant Overrides
-    const systemPrompt = `You are an automated reception assistant named Echo working 24/7 for "${company}".
-You are answering phone calls on behalf of ${name} and ${company}.
-Your goal is to act as ${company}'s 24/7 AI phone receptionist, greeting callers warmly and answering questions using the website factsheet below.
+    const firstMessage = `Thank you for calling ${company}, my name is Echo, how may I help you?`
+
+    const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering calls for "${company}".
+Greeting: "Thank you for calling ${company}, my name is Echo, how may I help you?"
+Owner / Contact Person: ${name}
 
 WEBSITE KNOWLEDGE BASE FOR ${company}:
-- Company Name: ${company}
-- Owner/Contact Person: ${name}
+- Business Name: ${company}
+- Owner / Contact Person: ${name}
 - Website URL: ${website || 'N/A'}
 - Scraped Facts & Offerings: ${scrapedFacts}
 
 Rules:
-1. Opening Greeting: "Hello, thank you for calling ${company}! My name is Echo, your 24/7 AI Receptionist for ${company}. How can I help you today?"
-2. When asked about services or quotes, answer concisely using the scraped website factsheet above.
-3. Keep answers clear, professional, and friendly (1-2 sentences per response).`
-
-    const firstMessage = `Hello, thank you for calling ${company}! My name is Echo, your 24/7 AI Receptionist for ${company}. How can I help you today?`
+1. Opening Greeting: "Thank you for calling ${company}, my name is Echo, how may I help you?"
+2. Answer customer questions about ${company} concisely and professionally (1-2 sentences) using the scraped website factsheet above.
+3. Keep answers clear, professional, and friendly.`
 
     let callTriggered = false
     let vapiResponseData: any = null
@@ -187,7 +189,7 @@ Rules:
       console.error('Vapi outbound fetch exception:', err)
     }
 
-    // 5. Fallback to Twilio Voice API with ElevenLabs ultra-realistic human voice stream
+    // 5. Fallback to Twilio Voice API with ElevenLabs ultra-realistic human voice stream & live speech input
     if (!callTriggered) {
       const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
       const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
@@ -195,12 +197,16 @@ Rules:
 
       if (twilioAccountSid && twilioAuthToken) {
         try {
-          const spokenText = `Hello ${name}! Thank you for calling ${company} today. My name is Echo, your 24/7 AI Receptionist for ${company}. We have scraped your website ${website || company} and configured your custom AI knowledge base. Visit echoliftai.co.uk to claim your full audit package.`
+          const spokenText = `Thank you for calling ${company}, my name is Echo, how may I help you?`
           const audioStreamUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(spokenText)}`
+          const pIdStr = prospectId ? String(prospectId) : ''
 
-          const twiml = `<Response>
-            <Play>${audioStreamUrl}</Play>
-          </Response>`
+          const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Play>${audioStreamUrl}</Play>
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
+  </Gather>
+</Response>`
 
           const authHeader = 'Basic ' + Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString('base64')
           const twilioRes = await fetch(

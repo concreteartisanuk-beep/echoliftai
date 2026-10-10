@@ -1064,8 +1064,8 @@
         console.error("API call error:", err);
       }
 
-      const systemPrompt = callData?.systemPrompt || `You are an automated reception assistant named Echo working 24/7 for "${company}". Greet caller ${name} warmly and answer questions using facts about ${company}.`;
-      const firstMsg = callData?.firstMessage || `Hi ${name}! Thank you for calling ${company}. I am your 24/7 EchoLift AI phone receptionist. How can I help you today?`;
+      const systemPrompt = callData?.systemPrompt || `You are Echo, the 24/7 AI Receptionist answering calls for "${company}". Greeting: "Thank you for calling ${company}, my name is Echo, how may I help you?"`;
+      const firstMsg = callData?.firstMessage || `Thank you for calling ${company}, my name is Echo, how may I help you?`;
 
       if (callData?.callTriggered) {
         if (statusMsg) {

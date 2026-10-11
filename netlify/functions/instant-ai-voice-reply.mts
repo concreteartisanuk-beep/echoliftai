@@ -150,67 +150,6 @@ const parseScrapedKnowledge = (factsText: string) => {
   return { services, locations, paragraphs }
 }
 
-/** Attempt ultra-fast LLM generation via Anthropic Claude 3.5 Haiku */
-const generateAiAnswer = async (
-  speech: string,
-  company: string,
-  contact: string,
-  knowledgeContext: string
-): Promise<string | null> => {
-  try {
-    const apiKey =
-      process.env.ANTHROPIC_API_KEY ||
-      (typeof Netlify !== 'undefined' ? (Netlify as any).env?.get('ANTHROPIC_API_KEY') : '')
-    if (!apiKey) return null
-
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 1100)
-
-    const prompt = `You are Echo, the friendly, professional, 24/7 AI telephone receptionist answering calls for "${company}".
-Owner / Contact Person: "${contact}".
-
-KNOWLEDGE BASE ABOUT ${company}:
-${knowledgeContext}
-
-CALLER'S QUESTION ON THE PHONE:
-"${speech}"
-
-RULES FOR YOUR SPOKEN ANSWER:
-1. Respond in 1-2 concise, conversational spoken sentences suitable for a phone call.
-2. Directly answer questions about ${company}'s services, products, pricing, location, and bookings based on the knowledge base.
-3. If asked about something specific to their business that isn't mentioned, be helpful and offer to take their details or have ${contact} call them back.
-4. Speak naturally like a real UK receptionist. Do NOT use bullet points, markdown, or mention you are an AI.`
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 100,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    clearTimeout(timer)
-
-    if (res.ok) {
-      const data = await res.json()
-      const textBlock = data.content?.find((c: any) => c.type === 'text')
-      if (textBlock?.text) {
-        return textBlock.text.trim()
-      }
-    }
-  } catch (err) {
-    // Timeout or network error - smoothly falls through to the knowledge engine
-  }
-  return null
-}
-
 export default async (req: Request) => {
   try {
     const url = new URL(req.url)
@@ -278,170 +217,338 @@ export default async (req: Request) => {
 
     const allServices = [...new Set([...parsed.services, ...inferred.coreServices])]
     const allLocations = [...new Set([...parsed.locations, ...inferred.locations])]
-    const knowledgeContext = `Business: ${company}
-Owner: ${contact}
-Services: ${allServices.join('; ')}
-Locations: ${allLocations.join(', ')}
-Specialties: ${inferred.specialties}
-Website Details: ${facts}`
 
-    let aiReply: string | null = null
+    const isMicrocementOrConcrete =
+      company.toLowerCase().includes('concreet') ||
+      facts.toLowerCase().includes('microcement') ||
+      facts.toLowerCase().includes('concrete') ||
+      inferred.industry.includes('Microcement')
 
-    // 1. First priority: Try ultra-fast AI generation with Claude 3.5 Haiku
-    if (userSpeech) {
-      aiReply = await generateAiAnswer(userSpeech, company, contact, knowledgeContext)
+    const lower = userSpeech.toLowerCase().trim()
+    const contactFirst = contact.split(' ')[0].toLowerCase()
+
+    let aiReply = ''
+
+    // 1. GREETINGS
+    if (
+      lower === 'hello' ||
+      lower === 'hi' ||
+      lower === 'hey' ||
+      lower === 'hello echo' ||
+      lower === 'good morning' ||
+      lower === 'good afternoon'
+    ) {
+      aiReply = `Hello! I am Echo, the 24/7 AI Receptionist for ${company}. How can I help with your project today?`
     }
 
-    // 2. Deterministic Knowledge Engine (runs if AI took >1100ms or is unavailable)
-    if (!aiReply) {
-      const lower = userSpeech.toLowerCase().trim()
-      const contactFirst = contact.split(' ')[0].toLowerCase()
+    // 2. APEXVOICE / ECHOLIFT PLATFORM EXPLANATION
+    else if (
+      lower.includes('apexvoice') ||
+      lower.includes('apex voice') ||
+      lower.includes('echolift') ||
+      lower.includes('who built you') ||
+      lower.includes('what are you')
+    ) {
+      aiReply = `ApexVoice is our 24/7 AI voice receptionist platform. It answers calls instantly, answers customer inquiries knowledgeably for ${company}, and books jobs straight into your schedule so you never lose leads.`
+    }
 
-      // A. Greetings
-      if (
-        lower === 'hello' ||
-        lower === 'hi' ||
-        lower === 'hey' ||
-        lower === 'hello echo' ||
-        lower === 'good morning' ||
-        lower === 'good afternoon'
-      ) {
-        aiReply = `Hello! I am Echo, the 24/7 AI Receptionist for ${company}. How can I help with your project today?`
+    // 3. DURABILITY, STRENGTH, CRACKING, SCRATCHING, WEAR
+    else if (
+      lower.includes('durable') ||
+      lower.includes('durability') ||
+      lower.includes('crack') ||
+      lower.includes('scratch') ||
+      lower.includes('stain') ||
+      lower.includes('tough') ||
+      lower.includes('hard wearing') ||
+      lower.includes('wear and tear') ||
+      lower.includes('last long') ||
+      lower.includes('how long does it last')
+    ) {
+      if (isMicrocementOrConcrete) {
+        aiReply = `It is exceptionally tough, flexible, and crack-resistant. It is sealed with a heavy-duty polyurethane coating that resists stains, scratches, and daily wear.`
+      } else {
+        aiReply = `All our work and materials at ${company} are built to be extremely durable, heavy-duty, and backed by comprehensive guarantees against wear and defects.`
       }
+    }
 
-      // B. ApexVoice / EchoLift platform explanation
-      else if (
-        lower.includes('apexvoice') ||
-        lower.includes('apex voice') ||
-        lower.includes('echolift') ||
-        lower.includes('how does this work') ||
-        lower.includes('who built you')
-      ) {
-        aiReply = `ApexVoice is our 24/7 AI voice receptionist platform. It answers calls instantly, answers customer inquiries knowledgeably for ${company}, and books jobs straight into your diary so you never lose leads.`
+    // 4. WATERPROOFING, WATER RESISTANCE, BATHROOMS, WET ROOMS, SHOWERS
+    else if (
+      lower.includes('waterproof') ||
+      lower.includes('water proof') ||
+      lower.includes('water resistant') ||
+      lower.includes('wet room') ||
+      lower.includes('wetroom') ||
+      lower.includes('shower') ||
+      lower.includes('bathroom') ||
+      lower.includes('moisture')
+    ) {
+      if (isMicrocementOrConcrete) {
+        aiReply = `Yes! It is 100% waterproof and completely seamless with no grout lines, making it perfect for luxury bathrooms, walk-in showers, and wet rooms.`
+      } else if (inferred.industry.includes('Roofing')) {
+        aiReply = `Yes, all our roof installations and EPDM rubber flat roofs are 100% waterproof, weather-sealed, and backed by long-term leak-free warranties.`
+      } else {
+        aiReply = `Yes, we handle complete waterproof installations and bathroom finishes with full seal guarantees.`
       }
+    }
 
-      // C. Pricing & Quotes (Evaluated BEFORE service search so "how much is X" gives a quote answer)
-      else if (
-        lower.includes('quote') ||
-        lower.includes('cost') ||
-        lower.includes('price') ||
-        lower.includes('pricing') ||
-        lower.includes('estimate') ||
-        lower.includes('fee') ||
-        lower.includes('how much') ||
-        lower.includes('rates')
-      ) {
-        aiReply = `We provide free, no-obligation quotes for all our work at ${company}. Would you like me to book a quick callback with ${contact} to discuss your project and pricing?`
+    // 5. TILES, EXISTING SURFACES, SUBSTRATES, RIPPING OUT
+    else if (
+      lower.includes('tile') ||
+      lower.includes('tiles') ||
+      lower.includes('existing surface') ||
+      lower.includes('rip out') ||
+      lower.includes('substrate') ||
+      lower.includes('plasterboard') ||
+      lower.includes('timber') ||
+      lower.includes('what can it go on') ||
+      lower.includes('what surfaces')
+    ) {
+      if (isMicrocementOrConcrete) {
+        aiReply = `Yes, it can be applied directly over existing tiles, concrete, timber, and plasterboard without the mess or cost of ripping old tiles out.`
+      } else {
+        aiReply = `Yes, our team works over all standard existing substrates and can advise on the best surface preparation during a site survey.`
       }
+    }
 
-      // D. Location & Service Area
-      else if (
-        lower.includes('where') ||
-        lower.includes('location') ||
-        lower.includes('based') ||
-        lower.includes('area') ||
-        lower.includes('cover') ||
-        lower.includes('travel') ||
-        lower.includes('address')
-      ) {
-        const locStr = allLocations.length ? allLocations.slice(0, 3).join(', ') : 'the local area and surrounding regions'
-        aiReply = `${company} is based in and serves ${locStr}. Where is your property located?`
+    // 6. TIMESCALE, HOW LONG DOES IT TAKE, PROJECT DURATION
+    else if (
+      lower.includes('how long') ||
+      lower.includes('timescale') ||
+      lower.includes('duration') ||
+      lower.includes('how many days') ||
+      lower.includes('time frame') ||
+      lower.includes('take to install') ||
+      lower.includes('turnaround')
+    ) {
+      if (isMicrocementOrConcrete) {
+        aiReply = `A typical installation takes around three to five days depending on the size of the area and drying times.`
+      } else {
+        aiReply = `Project timescales depend on the exact job size, but most standard projects are completed within two to four days. Would you like a timescale estimate for your project?`
       }
+    }
 
-      // E. Availability & Scheduling
-      else if (
-        lower.includes('when can you start') ||
-        lower.includes('availability') ||
-        lower.includes('available') ||
-        lower.includes('book') ||
-        lower.includes('how soon') ||
-        lower.includes('tomorrow') ||
-        lower.includes('this week') ||
-        lower.includes('next week')
-      ) {
-        aiReply = `We can check our diary and get an appointment or site visit scheduled for you at ${company}. Would you like me to have ${contact} call you back to confirm a date?`
-      }
+    // 7. FLOORS, UNDERFLOOR HEATING
+    else if (
+      lower.includes('floor') ||
+      lower.includes('flooring') ||
+      lower.includes('underfloor') ||
+      lower.includes('cold underfoot')
+    ) {
+      aiReply = `Yes, it makes stunning seamless floors. It feels warm underfoot and is fully compatible with underfloor heating without any risk of cracking.`
+    }
 
-      // F. Insurance, Guarantees, Gas Safe, Accreditations
-      else if (
-        lower.includes('insured') ||
-        lower.includes('insurance') ||
-        lower.includes('guarantee') ||
-        lower.includes('guaranteed') ||
-        lower.includes('warranty') ||
-        lower.includes('certified') ||
-        lower.includes('gas safe')
-      ) {
-        if (inferred.industry.includes('Plumbing') || facts.toLowerCase().includes('gas safe')) {
-          aiReply = `Yes, all our engineers at ${company} are fully Gas Safe registered and our work is backed by comprehensive insurance and warranties.`
-        } else {
-          aiReply = `Yes, all our work at ${company} is fully guaranteed and backed by comprehensive public liability insurance for complete peace of mind.`
+    // 8. KITCHENS, WORKTOPS, COUNTERTOPS, SPLASHBACKS, ISLANDS
+    else if (
+      lower.includes('kitchen') ||
+      lower.includes('worktop') ||
+      lower.includes('countertop') ||
+      lower.includes('island') ||
+      lower.includes('splashback')
+    ) {
+      aiReply = `Yes, we craft bespoke seamless kitchen worktops, splashbacks, and islands that are heat-resistant, hygienic, and completely grout-free.`
+    }
+
+    // 9. COLOURS, FINISHES, TEXTURES, SAMPLES
+    else if (
+      lower.includes('color') ||
+      lower.includes('colour') ||
+      lower.includes('colours') ||
+      lower.includes('colors') ||
+      lower.includes('finish') ||
+      lower.includes('finishes') ||
+      lower.includes('texture') ||
+      lower.includes('sample')
+    ) {
+      aiReply = `We offer an extensive range of colours, tones, and textures, from smooth contemporary polished finishes to rustic textured mineral effects.`
+    }
+
+    // 10. CLEANING, MAINTENANCE, SOAP, MOULD
+    else if (
+      lower.includes('clean') ||
+      lower.includes('maintain') ||
+      lower.includes('maintenance') ||
+      lower.includes('soap') ||
+      lower.includes('mould') ||
+      lower.includes('mold') ||
+      lower.includes('care for')
+    ) {
+      aiReply = `It is very easy to look after. Just clean with warm water and a neutral pH soap. With zero grout lines, there is nowhere for mould or dirt to hide.`
+    }
+
+    // 11. WHAT IS MICROCEMENT / WHAT IS IT / EXPLANATION
+    else if (
+      lower.includes('what is microcement') ||
+      lower.includes('what is it') ||
+      lower.includes('tell me about microcement') ||
+      lower.includes('what do you mean by microcement')
+    ) {
+      aiReply = `Microcement is a polymer-modified decorative cement overlay applied at just two to three millimetres thick, giving you the luxury look of polished concrete on walls, floors, and surfaces.`
+    }
+
+    // 12. BOILERS & CENTRAL HEATING
+    else if (
+      lower.includes('boiler') ||
+      lower.includes('central heating') ||
+      lower.includes('radiator') ||
+      lower.includes('power flush')
+    ) {
+      aiReply = `Yes, we cover boiler installations, servicing, central heating upgrades, and emergency repairs, and all our engineers are fully Gas Safe registered.`
+    }
+
+    // 13. GAS SAFE / SAFETY ACCREDITATIONS
+    else if (
+      lower.includes('gas safe') ||
+      lower.includes('cp12') ||
+      lower.includes('landlord certificate')
+    ) {
+      aiReply = `Yes, all our heating engineers at ${company} are fully Gas Safe registered and our work is backed by certified safety guarantees.`
+    }
+
+    // 14. ROOFING & FLAT ROOFS
+    else if (
+      lower.includes('flat roof') ||
+      lower.includes('epdm') ||
+      lower.includes('fibreglass roof') ||
+      lower.includes('roof leak') ||
+      lower.includes('slate roof')
+    ) {
+      aiReply = `Yes, we specialize in high-performance EPDM flat roofs, slate and tile re-roofs, and emergency leak repairs with long-term guarantees.`
+    }
+
+    // 15. DOG GROOMING & PET CARE
+    else if (
+      lower.includes('nail clipping') ||
+      lower.includes('full groom') ||
+      lower.includes('bath and blow') ||
+      lower.includes('puppy') ||
+      lower.includes('deshed')
+    ) {
+      aiReply = `Yes, we provide gentle 1-to-1 full grooms, bath and blow-dry, nail clipping, and deshedding treatments for all dog breeds.`
+    }
+
+    // 16. DENTAL & TEETH WHITENING
+    else if (
+      lower.includes('teeth whitening') ||
+      lower.includes('hygienist') ||
+      lower.includes('checkup') ||
+      lower.includes('invisalign') ||
+      lower.includes('toothache')
+    ) {
+      aiReply = `Yes, we provide routine dental checkups, hygienist cleans, teeth whitening, and emergency toothache appointments.`
+    }
+
+    // 17. PRICING & QUOTES (Checked before service matching so "how much is X" gives a quote answer)
+    else if (
+      lower.includes('quote') ||
+      lower.includes('cost') ||
+      lower.includes('price') ||
+      lower.includes('pricing') ||
+      lower.includes('estimate') ||
+      lower.includes('fee') ||
+      lower.includes('how much') ||
+      lower.includes('rates')
+    ) {
+      aiReply = `We provide free, no-obligation quotes for all our work at ${company}. Would you like me to book a quick callback with ${contact} to discuss your project and pricing?`
+    }
+
+    // 18. LOCATION & SERVICE AREA
+    else if (
+      lower.includes('where are you') ||
+      lower.includes('where based') ||
+      lower.includes('location') ||
+      lower.includes('what area') ||
+      lower.includes('do you cover') ||
+      lower.includes('do you travel') ||
+      lower.includes('address')
+    ) {
+      const locStr = allLocations.length ? allLocations.slice(0, 3).join(', ') : 'the local area and surrounding regions'
+      aiReply = `${company} is based in and serves ${locStr}. Where is your property located?`
+    }
+
+    // 19. AVAILABILITY & SCHEDULING
+    else if (
+      lower.includes('when can you start') ||
+      lower.includes('availability') ||
+      lower.includes('available') ||
+      lower.includes('book an appointment') ||
+      lower.includes('book a date') ||
+      lower.includes('how soon') ||
+      lower.includes('tomorrow') ||
+      lower.includes('this week') ||
+      lower.includes('next week')
+    ) {
+      aiReply = `We can check our diary and get an appointment or site survey scheduled for you at ${company}. Would you like me to have ${contact} call you back to confirm a date?`
+    }
+
+    // 20. INSURANCE & GUARANTEES
+    else if (
+      lower.includes('insured') ||
+      lower.includes('insurance') ||
+      lower.includes('guarantee') ||
+      lower.includes('guaranteed') ||
+      lower.includes('warranty') ||
+      lower.includes('certified')
+    ) {
+      aiReply = `Yes, all our work at ${company} is fully guaranteed and backed by comprehensive public liability insurance for complete peace of mind.`
+    }
+
+    // 21. SPEAK TO OWNER / HUMAN
+    else if (
+      lower.includes('speak to') ||
+      lower.includes('real person') ||
+      lower.includes('talk to') ||
+      lower.includes('human') ||
+      lower.includes(contact.toLowerCase()) ||
+      lower.includes(contactFirst)
+    ) {
+      aiReply = `Of course! I will pass your message directly to ${contact} right away. What is the best number and time to reach you on?`
+    }
+
+    // 22. ONLY WHEN EXPLICITLY ASKED: "What do you do?" / "What services do you offer?"
+    else if (
+      lower === 'what do you do' ||
+      lower.includes('what do you do') ||
+      lower.includes('what services do you offer') ||
+      lower.includes('what services do you provide') ||
+      lower.includes('tell me what you do') ||
+      lower.includes('tell me about your services')
+    ) {
+      const servicesList = allServices.slice(0, 3).join(', ')
+      aiReply = `At ${company}, we specialize in ${servicesList}. How can we help with your upcoming project?`
+    }
+
+    // 23. SPECIFIC SUBSTANTIVE SERVICE SEARCH (With strict stop-word filtering & score threshold >= 2)
+    else {
+      const stopWords = new Set([
+        'this', 'that', 'with', 'from', 'your', 'have', 'what', 'when', 'some', 'will',
+        'more', 'over', 'good', 'well', 'make', 'time', 'days', 'work', 'care', 'room',
+        'like', 'free', 'about', 'just', 'come', 'there', 'here', 'take', 'need', 'want',
+        'tell', 'them'
+      ])
+
+      let bestService: string | null = null
+      let maxScore = 0
+
+      for (const s of allServices) {
+        const words = s.toLowerCase().split(/[\s,]+/).filter((w) => w.length > 3 && !stopWords.has(w))
+        let score = 0
+        for (const w of words) {
+          if (lower.includes(w)) {
+            score += 1
+          }
+        }
+        if (score > maxScore && score >= 2) {
+          maxScore = score
+          bestService = s
         }
       }
 
-      // G. Speak to Owner / Human
-      else if (
-        lower.includes('speak to') ||
-        lower.includes('real person') ||
-        lower.includes('talk to') ||
-        lower.includes('human') ||
-        lower.includes(contact.toLowerCase()) ||
-        lower.includes(contactFirst)
-      ) {
-        aiReply = `Of course! I will pass your message directly to ${contact} right away. What is the best number and time to reach you on?`
-      }
-
-      // H. "What do you do" / Core Services Overview
-      else if (
-        lower.includes('service') ||
-        lower.includes('what do you do') ||
-        lower.includes('what services') ||
-        lower.includes('tell me about your business')
-      ) {
-        const servicesList = allServices.slice(0, 3).join(', ')
-        aiReply = `At ${company}, we specialize in ${servicesList}. How can we help with your upcoming project?`
-      }
-
-      // I. Specific Service Match (Scored against all company services)
-      else {
-        let bestService: string | null = null
-        let maxScore = 0
-
-        for (const s of allServices) {
-          const words = s.toLowerCase().split(/[\s,]+/)
-          let score = 0
-          for (const w of words) {
-            if (w.length > 3 && lower.includes(w)) {
-              score += 1
-            }
-          }
-          if (score > maxScore && score >= 1) {
-            maxScore = score
-            bestService = s
-          }
-        }
-
-        if (bestService) {
-          aiReply = `Yes! At ${company} we provide professional ${bestService.toLowerCase()}. Would you like to get a free quote or book a callback with ${contact}?`
-        } else {
-          // J. Scraped Paragraph Search
-          let paragraphMatch: string | null = null
-          for (const p of parsed.paragraphs) {
-            const pWords = lower.replace(/[^a-z0-9 ]/g, '').split(' ').filter((w) => w.length > 3)
-            const matches = pWords.filter((w) => p.toLowerCase().includes(w)).length
-            if (matches >= 2) {
-              paragraphMatch = p.split(/(?<=[.!?])\s+/)[0]
-              break
-            }
-          }
-
-          if (paragraphMatch) {
-            aiReply = `According to our records at ${company}, ${paragraphMatch}. Would you like me to have ${contact} follow up with full details?`
-          } else {
-            // K. Attentive Receptionist Fallback
-            aiReply = `That sounds like a great project for ${company}. I can take down your details or have ${contact} call you back today with all the information. Would you like me to arrange that?`
-          }
-        }
+      if (bestService) {
+        aiReply = `Yes! At ${company} we provide professional ${bestService.toLowerCase()}. Would you like to get a free quote or book a callback with ${contact}?`
+      } else {
+        // Fallback: polite, attentive receptionist callback offer
+        aiReply = `That sounds like something we can definitely help with at ${company}. I can take down your details or have ${contact} call you back today with full information. Would you like me to arrange that?`
       }
     }
 

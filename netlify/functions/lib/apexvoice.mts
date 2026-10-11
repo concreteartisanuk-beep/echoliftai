@@ -443,6 +443,81 @@ export async function sendSms(toRaw: string, body: string): Promise<SmsSendResul
   }
 }
 
+export interface VoiceCallResult {
+  ok: boolean
+  callSid?: string
+  error?: string
+}
+
+/**
+ * Places an outbound voice call to a UK landline or phone number via Twilio Voice API.
+ * Uses UK voice synthesis to deliver the missed call receptionist pitch or leave a voicemail drop.
+ */
+export async function callLandline(
+  toRaw: string,
+  prospect: { id: number; businessName?: string; contactPerson?: string; industry?: string }
+): Promise<VoiceCallResult> {
+  const sid = getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')
+  const token = getEnv('TWILIO_AUTH_TOKEN')
+  const from = getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || '+441914062323'
+
+  if (!sid || !token) {
+    return { ok: false, error: 'Twilio Voice is not configured.' }
+  }
+
+  const to = toE164(toRaw)
+  if (!to) {
+    return { ok: false, error: `Could not parse "${toRaw}" as a callable phone number.` }
+  }
+
+  const company = prospect.businessName || 'your business'
+  const contact = prospect.contactPerson ? prospect.contactPerson.split(' ')[0] : 'there'
+  const trade = prospect.industry || 'trade'
+
+  // Dynamic TwiML with UK English voice ("alice")
+  const pitchText = `Hello ${contact}. This is Alex from EchoLift AI. I am calling because over 60 percent of incoming calls to UK ${trade} businesses go unanswered, costing thousands in lost jobs to competitors. We deploy a 24/7 AI receptionist specifically for ${company} that answers customer inquiries, gives quotes, and captures leads while you work. To hear a live 30-second demo for ${company}, visit echo lift a i dot co dot uk. Thank you.`
+
+  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Pause length="1"/>
+  <Say voice="alice" language="en-GB">${pitchText}</Say>
+  <Pause length="1"/>
+  <Gather input="speech dtmf" timeout="5" numDigits="1">
+    <Say voice="alice" language="en-GB">To have us text a live demo link to your mobile, please press 1 now.</Say>
+  </Gather>
+  <Say voice="alice" language="en-GB">Have a great day from EchoLift AI.</Say>
+</Response>`
+
+  try {
+    const auth = Buffer.from(`${sid}:${token}`).toString('base64')
+    const params = new URLSearchParams({
+      To: to,
+      From: from,
+      Twiml: twiml,
+      MachineDetection: 'Enable', // Detect voicemail vs human
+    })
+
+    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Calls.json`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    })
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '')
+      return { ok: false, error: `Twilio call failed (${res.status}): ${detail.slice(0, 300)}` }
+    }
+
+    const data = (await res.json().catch(() => ({}))) as { sid?: string }
+    return { ok: true, callSid: data.sid }
+  } catch (err: any) {
+    return { ok: false, error: err.message || 'Error triggering outbound call.' }
+  }
+}
+
 /**
  * Validates that an inbound webhook request really came from Twilio, using
  * the same HMAC-SHA1 scheme Twilio's own client libraries use. Skipped (and

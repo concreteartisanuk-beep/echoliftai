@@ -1,5 +1,5 @@
 import type { Config } from '@netlify/functions'
-import { db, sendSms, recordOutcome } from './lib/apexvoice.mts'
+import { db, sendSms, callLandline, recordOutcome } from './lib/apexvoice.mts'
 
 interface ProspectRow {
   id: number
@@ -42,63 +42,18 @@ export default async () => {
   console.log('🚀 Running automated high-speed prospect outreach batch...')
 
   try {
-    // 1. Fetch existing fresh mobile prospects from database (mobile numbers starting with 07 or +447 only)
-    let freshRows = (await db().sql`
+    // 1. Fetch existing fresh prospects (both mobiles and landlines)
+    const freshRows = (await db().sql`
       SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
-        AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
-      LIMIT 25
+      ORDER BY warmth_score DESC, id DESC
+      LIMIT 15
     `) as ProspectRow[]
 
-    // 2. Fast instant replenishment if queue is under 15
-    if (freshRows.length < 15) {
-      console.log(`🌱 Queue low (${freshRows.length} prospects). Instantly topping up pipeline...`)
-      
-      for (const item of CURATED_TRADE_POOL) {
-        const phoneDigits = item.phone.replace(/[^0-9]/g, '')
-        
-        // Deduplicate against existing prospects
-        const existing = (await db().sql`
-          SELECT id FROM apexvoice_prospects
-          WHERE RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 9) = ${phoneDigits.slice(-9)}
-          LIMIT 1
-        `) as ProspectRow[]
-
-        if (existing.length === 0) {
-          await db().sql`
-            INSERT INTO apexvoice_prospects (
-              business_name, contact_person, industry, location, phone, email, website, warmth_score, status, source
-            ) VALUES (
-              ${item.name},
-              ${item.contact},
-              ${item.industry},
-              ${item.location},
-              ${item.phone},
-              '',
-              '',
-              60,
-              'New',
-              'Fast Trade Pipeline Pool'
-            )
-          `
-        }
-      }
-
-      // Re-fetch fresh mobile rows after instant SQL seed
-      freshRows = (await db().sql`
-        SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
-        FROM apexvoice_prospects
-        WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
-          AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
-          AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != '7494867646'
-        LIMIT 25
-      `) as ProspectRow[]
-    }
-
     if (freshRows.length === 0) {
-      console.log('ℹ️ No prospects queued. Skipping batch.')
+      console.log('ℹ️ No fresh customer prospects queued. Skipping batch.')
       return Response.json({
         success: true,
         message: 'No external customer prospects queued.',
@@ -106,49 +61,72 @@ export default async () => {
       })
     }
 
-    let sentCount = 0
+    let smsSent = 0
+    let callsSent = 0
     let failedCount = 0
 
-    // 3. Dispatch outreach SMS to up to 15 fresh mobile prospects per batch
-    for (const prospect of freshRows.slice(0, 15)) {
+    // 2. Dispatch outreach: SMS for mobiles, AI Voice Call for landlines
+    for (const prospect of freshRows) {
       const contact = (prospect.contact_person || 'there').split(' ')[0]
       const biz = prospect.business_name || 'your business'
       const city = prospect.location || 'UK'
+      const digits = (prospect.phone || '').replace(/[^0-9]/g, '')
 
-      const smsBody = `Hi ${contact}, Alex from EchoLift AI. Noticed ${biz} in ${city}. Did you know ~62% of missed trade calls go to rivals? We deploy a 24/7 AI receptionist for UK trades. Free 30s demo: https://echoliftai.co.uk/#demo`
+      const isMobile = digits.startsWith('07') || digits.startsWith('447')
 
-      // Safety check: never send outreach pitch to owner phone number
-      const phoneDigits = prospect.phone.replace(/[^0-9]/g, '')
-      if (phoneDigits.endsWith('7494867646')) {
-        console.log(`Skipping outreach pitch to owner number: ${prospect.phone}`)
-        continue
-      }
+      if (isMobile) {
+        // High-converting SMS outreach for mobiles
+        const smsBody = `Hi ${contact}, Alex from EchoLift AI. Noticed ${biz} in ${city}. Did you know ~62% of missed trade calls go to rivals? We deploy a 24/7 AI receptionist for UK trades. Free 30s demo: https://echoliftai.co.uk/#live-demo-section`
+        const smsResult = await sendSms(prospect.phone, smsBody)
 
-      const smsResult = await sendSms(prospect.phone, smsBody)
-
-      if (smsResult.ok) {
-        sentCount++
-        await recordOutcome(
-          prospect,
-          'SMS',
-          'Outbound Pitch Sent (EchoLift AI)',
-          'Contacted',
-          new Date().toISOString(),
-          prospect.warmth_score + 10
-        )
+        if (smsResult.ok) {
+          smsSent++
+          await recordOutcome(
+            prospect,
+            'SMS',
+            'Outbound Pitch Sent (Mobile SMS)',
+            'Contacted',
+            new Date().toISOString(),
+            prospect.warmth_score + 10
+          )
+        } else {
+          failedCount++
+          console.error(`SMS outreach failed for prospect ${prospect.id}:`, smsResult.error)
+        }
       } else {
-        failedCount++
-        console.error(`Outreach failed for prospect ${prospect.id}:`, smsResult.error)
+        // Automated outbound AI Voice pitch / Voicemail drop for landlines
+        const callResult = await callLandline(prospect.phone, {
+          id: prospect.id,
+          businessName: prospect.business_name,
+          contactPerson: prospect.contact_person,
+          industry: prospect.industry,
+        })
+
+        if (callResult.ok) {
+          callsSent++
+          await recordOutcome(
+            prospect,
+            'Call',
+            `Outbound AI Receptionist Call Placed (${callResult.callSid || 'Twilio'})`,
+            'Contacted',
+            new Date().toISOString(),
+            prospect.warmth_score + 15
+          )
+        } else {
+          failedCount++
+          console.error(`Landline call failed for prospect ${prospect.id}:`, callResult.error)
+        }
       }
 
-      // Small 150ms delay between Twilio requests for carrier safety
-      await new Promise((r) => setTimeout(r, 150))
+      // 300ms pause between Twilio requests for carrier safety
+      await new Promise((r) => setTimeout(r, 300))
     }
 
     return Response.json({
       success: true,
       timestamp: new Date().toISOString(),
-      outreachSent: sentCount,
+      smsSent,
+      callsSent,
       outreachFailed: failedCount,
     })
   } catch (error: any) {

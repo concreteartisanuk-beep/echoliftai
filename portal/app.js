@@ -452,6 +452,14 @@ function renderLeadsTable() {
       ? esc(lead.contactPerson)
       : `<span title="${lead.source === 'osm' ? 'Not published in the directory — add once you know it' : 'No contact name recorded'}">—</span>`;
 
+    const digits = (lead.phone || '').replace(/[^0-9]/g, '');
+    const isMobile = digits.startsWith('07') || digits.startsWith('447');
+    const phoneTypeBadge = lead.phone
+      ? isMobile
+        ? '<span style="font-size: 0.72rem; padding: 2px 5px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600; margin-left: 4px;">Mobile (SMS ready)</span>'
+        : '<span style="font-size: 0.72rem; padding: 2px 5px; border-radius: 4px; background: rgba(59,130,246,0.15); color: #3b82f6; font-weight: 600; margin-left: 4px;">Landline (Voice Call)</span>'
+      : '';
+
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>
@@ -463,7 +471,7 @@ function renderLeadsTable() {
       <td>
         <div class="lead-business-info">
           <span style="font-weight: 500;">${contactName}</span>
-          <span class="lead-subtext">${esc(lead.phone)}</span>
+          <span class="lead-subtext">${esc(lead.phone)}${phoneTypeBadge}</span>
         </div>
       </td>
       <td>

@@ -1,6 +1,6 @@
 import type { Config } from '@netlify/functions'
 import { db, jsonError, text, toProspect, type ProspectRow } from './lib/apexvoice.mts'
-import { findBusinesses, type BusinessRecord } from './lib/business-search.mts'
+import { extractMobilesFromWebsite, findBusinesses, type BusinessRecord } from './lib/business-search.mts'
 
 /**
  * Finds real businesses for an industry and UK location and loads them into the
@@ -147,7 +147,24 @@ export default async (req: Request) => {
     )
   }
 
-  const drafts: ProspectDraft[] = businesses.map((record) => ({
+  // Deep mobile extraction: if a business has a website, check for direct mobile/WhatsApp numbers
+  const enrichedBusinesses = await Promise.all(
+    businesses.map(async (record) => {
+      const isMobile = (record.phone || '').replace(/[^0-9]/g, '').startsWith('07') || (record.phone || '').replace(/[^0-9]/g, '').startsWith('447')
+      if (!isMobile && record.website) {
+        const foundMobiles = await extractMobilesFromWebsite(record.website)
+        if (foundMobiles.length > 0) {
+          return {
+            ...record,
+            phone: foundMobiles[0], // Upgrade to mobile
+          }
+        }
+      }
+      return record
+    })
+  )
+
+  const drafts: ProspectDraft[] = enrichedBusinesses.map((record) => ({
     record,
     painPoints: derivePainPoints(record),
     warmthScore: deriveWarmth(record),

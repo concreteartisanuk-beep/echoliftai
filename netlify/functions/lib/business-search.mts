@@ -621,6 +621,51 @@ const placeToRecord = (place: NominatimPlace): BusinessRecord | null => {
 }
 
 /**
+ * Crawls a website homepage and contact page with a short timeout to extract UK mobile numbers and WhatsApp links.
+ */
+export const extractMobilesFromWebsite = async (rawUrl: string): Promise<string[]> => {
+  if (!rawUrl) return []
+  const cleanUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`
+  const mobiles: string[] = []
+
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 2500)
+    const res = await fetch(cleanUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': USER_AGENT,
+        Accept: 'text/html,application/xhtml+xml',
+      },
+    }).catch(() => null)
+    clearTimeout(timer)
+
+    if (res && res.ok) {
+      const html = await res.text().catch(() => '')
+      // 1. WhatsApp link search (wa.me/447... or api.whatsapp.com/send?phone=447...)
+      const waMatches = html.match(/(?:wa\.me\/(?:44\s?7|07)\d{8,9}|whatsapp\.com\/send\?phone=(?:44\s?7|07)\d{8,9})/gi) || []
+      for (const wa of waMatches) {
+        const digits = wa.replace(/[^\d]/g, '')
+        if (digits.length >= 10) mobiles.push(digits.startsWith('44') ? `+${digits}` : digits)
+      }
+
+      // 2. UK Mobile number format: 07xxx xxxxxx or +44 7xxx xxxxxx
+      const mobMatches = html.match(/(?:(?:\+44\s?7|07)\d{1,4}(?:[\s.-]?\d{3,4}){2})/g) || []
+      for (const m of mobMatches) {
+        const cleanDigits = m.replace(/[\s.-]/g, '')
+        if ((cleanDigits.startsWith('07') && cleanDigits.length === 11) || (cleanDigits.startsWith('+447') && cleanDigits.length === 13)) {
+          mobiles.push(cleanDigits)
+        }
+      }
+    }
+  } catch {
+    // Timeout or network error
+  }
+
+  return [...new Set(mobiles)]
+}
+
+/**
  * Rank by how contactable the business is. A record with a phone number is a
  * lead; one with neither phone nor website is a map pin, and is dropped.
  */

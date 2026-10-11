@@ -19,6 +19,29 @@ interface CatalogItem {
 }
 
 const CATALOG: Record<string, CatalogItem> = {
+  // --- ApexVoice AI Telephone Receptionist & Sales Engine ---
+  'apexvoice-starter': {
+    name: 'ApexVoice Starter AI Receptionist',
+    description: '24/7 AI call answering, up to 250 outbound SMS outreach, custom business knowledge base.',
+    monthly: 9900,
+    annual: 99000,
+    mode: 'subscription',
+  },
+  'apexvoice-pro': {
+    name: 'ApexVoice Professional Sales Suite',
+    description: 'Unlimited outbound SMS, live auto-dial telephony, ElevenLabs neural voice, text-to-call funnel.',
+    monthly: 29900,
+    annual: 299000,
+    mode: 'subscription',
+  },
+  'apexvoice-agency': {
+    name: 'ApexVoice Agency White-Label',
+    description: 'White-label SaaS re-branding, unlimited client sub-accounts, custom markup and billing controls.',
+    monthly: 69900,
+    annual: 699000,
+    mode: 'subscription',
+  },
+
   // --- Core subscription tiers ---
   starter: {
     name: 'EchoLift Starter',

@@ -1,5 +1,5 @@
 import type { Config } from '@netlify/functions'
-import { findProspect } from './lib/apexvoice.mts'
+import { db, findProspect, type ProspectRow } from './lib/apexvoice.mts'
 
 /** Dynamic industry & trade knowledge synthesiser when website data is partial */
 const inferIndustryProfile = (companyName: string, scrapedText: string) => {
@@ -254,6 +254,21 @@ export default async (req: Request) => {
         }
       } catch (err) {
         console.error('Error loading prospect for speech reply:', err)
+      }
+    } else {
+      // If prospectId is omitted, load the most recent prospect who just requested a live demo
+      try {
+        const rows = (await db().sql`
+          SELECT * FROM apexvoice_prospects ORDER BY id DESC LIMIT 1
+        `) as ProspectRow[]
+        if (rows[0]) {
+          company = rows[0].business_name || company
+          contact = rows[0].contact_person || contact
+          facts = rows[0].pain_points || facts
+          website = rows[0].website || website
+        }
+      } catch (err) {
+        console.error('Error loading latest prospect for speech reply:', err)
       }
     }
 

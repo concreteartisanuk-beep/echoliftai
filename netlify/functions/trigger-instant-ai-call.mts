@@ -5,34 +5,72 @@ const VAPI_API_KEY = process.env.VAPI_API_KEY || '0ebf67d6-4eca-4d1a-ab96-b71586
 const VAPI_ASSISTANT_ID = process.env.VAPI_ASSISTANT_ID || '74a2d264-ac9b-4943-90cf-de3dc022cc03'
 const VAPI_PHONE_NUMBER_ID = process.env.VAPI_PHONE_NUMBER_ID || ''
 
-/** Clean text scraped from HTML body, stripping menus, headers, scripts, and buttons */
-const cleanHtmlText = (html: string): string => {
-  // 1. Extract meta description if present
+/** Comprehensive website content scraper extracting services, locations, and business facts */
+const cleanHtmlToKnowledge = (html: string, company: string, url: string): string => {
+  // 1. Title
+  const titleMatch = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)
+  const title = titleMatch ? titleMatch[1].replace(/\s+/g, ' ').trim() : ''
+
+  // 2. Meta description
   const metaMatch = html.match(/<meta\s+(?:name|property)=["'](?:description|og:description)["']\s+content=["'](.*?)["']/i)
-  const metaDesc = metaMatch ? metaMatch[1].trim() : ''
+  const metaDesc = metaMatch ? metaMatch[1].replace(/\s+/g, ' ').trim() : ''
 
-  // 2. Extract paragraph and heading contents
-  const textBlocks: string[] = []
-  if (metaDesc) textBlocks.push(`Company Overview: ${metaDesc}`)
-
-  const paragraphMatches = html.match(/<(?:p|h1|h2|h3)\b[^>]*>([\s\S]*?)<\/(?:p|h1|h2|h3)>/gi) || []
-  for (const block of paragraphMatches) {
-    const text = block
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-    if (text.length > 25 && !/cookie|copyright|rights reserved|privacy policy|terms|sign in|login|diagnostic/i.test(text)) {
-      textBlocks.push(text)
+  // 3. Headings (h1, h2, h3)
+  const headings: string[] = []
+  const headingMatches = html.match(/<(?:h1|h2|h3)\b[^>]*>([\s\S]*?)<\/(?:h1|h2|h3)>/gi) || []
+  for (const h of headingMatches) {
+    const clean = h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (clean.length > 5 && clean.length < 120 && !/cookie|menu|navigation|footer|privacy|terms/i.test(clean)) {
+      headings.push(clean)
     }
   }
 
-  const combined = textBlocks.join('. ').slice(0, 1000)
-  return combined.length > 30 ? combined : 'General professional services and customer care.'
+  // 4. List items (li) - where trade businesses list their actual services & offerings
+  const listItems: string[] = []
+  const liMatches = html.match(/<li\b[^>]*>([\s\S]*?)<\/li>/gi) || []
+  for (const li of liMatches) {
+    const clean = li.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (clean.length > 6 && clean.length < 120 && !/cookie|home|about us|contact us|sign in|privacy|terms|facebook|instagram/i.test(clean)) {
+      listItems.push(clean)
+    }
+  }
+
+  // 5. Paragraphs (p)
+  const paragraphs: string[] = []
+  const pMatches = html.match(/<p\b[^>]*>([\s\S]*?)<\/p>/gi) || []
+  for (const p of pMatches) {
+    const clean = p.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    if (clean.length > 25 && clean.length < 350 && !/cookie|all rights reserved|copyright|privacy policy|terms & conditions/i.test(clean)) {
+      paragraphs.push(clean)
+    }
+  }
+
+  // 6. Detect UK locations mentioned on the site
+  const locationKeywords = [
+    'London', 'Manchester', 'Birmingham', 'Leeds', 'Newcastle', 'Glasgow', 'Edinburgh', 'Liverpool', 'Bristol',
+    'Sheffield', 'Cardiff', 'Belfast', 'Surrey', 'Kent', 'Essex', 'North East', 'North West', 'Yorkshire', 'Midlands'
+  ]
+  const foundLocations = locationKeywords.filter((loc) => new RegExp('\\b' + loc + '\\b', 'i').test(html))
+
+  const uniqueHeadings = [...new Set(headings)].slice(0, 8)
+  const uniqueServices = [...new Set(listItems)].slice(0, 12)
+  const uniqueParagraphs = [...new Set(paragraphs)].slice(0, 6)
+
+  const summaryParts: string[] = []
+  if (title) summaryParts.push(`Website Title: ${title}`)
+  if (metaDesc) summaryParts.push(`Overview: ${metaDesc}`)
+  if (foundLocations.length) summaryParts.push(`Service Areas: ${foundLocations.join(', ')}`)
+  if (uniqueServices.length) summaryParts.push(`Services & Offerings: ${uniqueServices.join('; ')}`)
+  if (uniqueHeadings.length) summaryParts.push(`Core Highlights: ${uniqueHeadings.join(' | ')}`)
+  if (uniqueParagraphs.length) summaryParts.push(`About Details: ${uniqueParagraphs.join(' ')}`)
+
+  const compiled = summaryParts.join('\n').slice(0, 3500)
+  return compiled.length > 40 ? compiled : `General professional services and customer care for ${company}.`
 }
 
-/** Fast website content scraper with strict deadline */
-const scrapeWebsiteFacts = async (urlStr: string): Promise<string> => {
-  if (!urlStr || urlStr.trim() === '') return 'No website URL provided.'
+/** Fast website content scraper with strict timeout */
+const scrapeWebsiteFacts = async (urlStr: string, company: string): Promise<string> => {
+  if (!urlStr || urlStr.trim() === '') return `No website URL provided for ${company}. Standard industry defaults active.`
 
   let validUrl = urlStr.trim()
   if (!/^https?:\/\//i.test(validUrl)) {
@@ -40,22 +78,21 @@ const scrapeWebsiteFacts = async (urlStr: string): Promise<string> => {
   }
 
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), 2500)
+  const timer = setTimeout(() => controller.abort(), 2800)
 
   try {
     const res = await fetch(validUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) EchoLiftBot/1.0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) EchoLiftBot/1.0 (Business Knowledge Extractor)',
       },
       signal: controller.signal,
     })
 
-    if (!res.ok) return `Could not load website (${res.status}).`
+    if (!res.ok) return `Website responded with status ${res.status}.`
     const html = await res.text()
-    const cleaned = cleanHtmlText(html)
-    return cleaned.length > 50 ? cleaned : 'Website loaded with minimal text.'
+    return cleanHtmlToKnowledge(html, company, validUrl)
   } catch (err) {
-    return 'Website fetch timed out. Using standard business defaults.'
+    return `Website fetch timed out. Using trade profile for ${company}.`
   } finally {
     clearTimeout(timer)
   }
@@ -98,19 +135,19 @@ export default async (req: Request) => {
 
     const e164Phone = toE164(rawPhone)
 
-    // 1. Scrape website facts in real-time
-    console.log(`🔍 Scraper inspecting ${website} for ${company}...`)
-    const scrapedFacts = await scrapeWebsiteFacts(website)
+    // 1. Scrape customer's website facts in real-time
+    console.log(`🔍 Scraper extracting business knowledge from ${website} for ${company}...`)
+    const scrapedFacts = await scrapeWebsiteFacts(website, company)
 
-    // 2. Save lead into database
+    // 2. Save lead with rich business knowledge into database
     let prospectId: number | null = null
     try {
       const [prospect] = (await db().sql`
         INSERT INTO apexvoice_prospects (
           business_name, contact_person, industry, location, phone, website, pain_points, warmth_score, status, source
         ) VALUES (
-          ${company}, ${name}, 'Instant AI Demo', 'UK', ${e164Phone}, ${website},
-          ${`Website Scraped Facts: ${scrapedFacts.slice(0, 500)}`},
+          ${company}, ${name}, 'Live Demo Prospect', 'UK', ${e164Phone}, ${website},
+          ${scrapedFacts},
           90, 'Instant Call Requested', 'Live Website Demo'
         )
         RETURNING *
@@ -123,7 +160,7 @@ export default async (req: Request) => {
           'Voice Call',
           'Instant AI Demo Call Triggered',
           'In Progress',
-          `Scraped website knowledge base for ${company}`,
+          `Scraped business knowledge for ${company}`,
           90
         )
       }
@@ -131,28 +168,18 @@ export default async (req: Request) => {
       console.error('Database lead save notice:', err)
     }
 
-    // 3. System Prompt & Dynamic Assistant Overrides
-    const firstMessage = `Thank you for calling ${company}, my name is Echo, how may I help you?`
+    // 3. Opening greeting
+    const spokenText = `Thank you for calling ${company}, my name is Echo, how may I help you?`
+    const audioStreamUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(spokenText)}`
+    const pIdStr = prospectId ? String(prospectId) : ''
 
-    const systemPrompt = `You are Echo, the 24/7 AI Receptionist answering calls for "${company}".
-Greeting: "Thank you for calling ${company}, my name is Echo, how may I help you?"
-Owner / Contact Person: ${name}
-
-WEBSITE KNOWLEDGE BASE FOR ${company}:
-- Business Name: ${company}
-- Owner / Contact Person: ${name}
-- Website URL: ${website || 'N/A'}
-- Scraped Facts & Offerings: ${scrapedFacts}
-
-Rules:
-1. Opening Greeting: "Thank you for calling ${company}, my name is Echo, how may I help you?"
-2. Answer customer questions about ${company} concisely and professionally (1-2 sentences) using the scraped website factsheet above.
-3. Keep answers clear, professional, and friendly.`
+    // 4. Pre-warm the greeting audio stream immediately in background so it is cached before pickup
+    fetch(audioStreamUrl).catch((e) => console.warn('Pre-warm greeting failed:', e))
 
     let callTriggered = false
     let vapiResponseData: any = null
 
-    // 4. Try Vapi Outbound API
+    // 5. Try Vapi Outbound API (if active)
     try {
       const vapiPayload = {
         assistantId: VAPI_ASSISTANT_ID,
@@ -162,24 +189,12 @@ Rules:
           name: name,
         },
         assistantOverrides: {
-          firstMessage: firstMessage,
+          firstMessage: spokenText,
           voice: {
             provider: '11labs',
             voiceId: 'Xb7hH2yqWyRel9GQ555e',
             stability: 0.5,
             similarityBoost: 0.75,
-          },
-          model: {
-            provider: 'openai',
-            model: 'gpt-4o-mini',
-            temperature: 0.3,
-            maxTokens: 100,
-            messages: [
-              {
-                role: 'system',
-                content: systemPrompt,
-              },
-            ],
           },
         },
       }
@@ -198,10 +213,10 @@ Rules:
         vapiResponseData = await vapiRes.json().catch(() => ({}))
       }
     } catch (err) {
-      console.error('Vapi outbound fetch exception:', err)
+      // Vapi fallback
     }
 
-    // 5. Fallback to Twilio Voice API with ElevenLabs ultra-realistic human voice stream & live speech input
+    // 6. Primary telephony via Twilio Voice API with ultra-realistic ElevenLabs human voice stream & live speech input
     if (!callTriggered) {
       const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
       const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
@@ -209,16 +224,9 @@ Rules:
 
       if (twilioAccountSid && twilioAuthToken) {
         try {
-          const spokenText = `Thank you for calling ${company}, my name is Echo, how may I help you?`
-          const audioStreamUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(spokenText)}`
-          const pIdStr = prospectId ? String(prospectId) : ''
-
-          // Pre-warm the greeting audio stream immediately so it is pre-cached in memory & DB before pickup
-          fetch(audioStreamUrl).catch((e) => console.warn('Pre-warm greeting failed:', e))
-
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="concreet, microcement, apexvoice, echolift, services, quote, pricing, cost, location, contact, phone, bathrooms, wet rooms, showers, kitchen, worktop, floors, tiles, durable, waterproof, timescale">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="services, quote, pricing, cost, location, contact, phone, appointments, bookings, hours, emergency">
     <Play>${audioStreamUrl}</Play>
   </Gather>
   <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
@@ -263,9 +271,8 @@ Rules:
         company,
         phone: e164Phone,
         website,
-        scrapedFactsSnippet: scrapedFacts.slice(0, 200),
-        systemPrompt,
-        firstMessage,
+        scrapedFactsSnippet: scrapedFacts.slice(0, 300),
+        firstMessage: spokenText,
         vapiCallId: vapiResponseData?.id || null,
       },
       {

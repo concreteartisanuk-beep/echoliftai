@@ -18,7 +18,7 @@ const extractDynamicFactsheet = (html: string, company: string, contact: string,
   const liMatches = html.match(/<li\b[^>]*>([\s\S]*?)<\/li>/gi) || []
   for (const li of liMatches) {
     const clean = li.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()
-    if (clean.length > 3 && clean.length < 80 && !/home|about|contact|sign in|cookie|privacy|facebook|instagram/i.test(clean)) {
+    if (clean.length > 3 && clean.length < 80 && !/home|about|contact|sign in|cookie|privacy|facebook|instagram|basket|cart|shop|checkout|menu|search|account|login|blog|news/i.test(clean) && !/[🛒🛍️📦]/u.test(clean)) {
       items.push(clean)
     }
   }

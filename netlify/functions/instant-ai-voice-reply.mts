@@ -132,7 +132,7 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
   const company = factsheet.company
   const contact = factsheet.contact
   const contactFirst = contact ? contact.split(' ')[0].toLowerCase() : ''
-  const services = factsheet.productsAndServices || []
+  const navPattern = /\b(?:home|about|contact|sign in|cookie|privacy|basket|cart|shop|checkout|menu|search|account|login)\b/i\n  const services = (factsheet.productsAndServices || []).filter(s => !navPattern.test(s) && !/[🛒🛍️📦]/u.test(s))
   const servicesSummary = services.length
     ? services.slice(0, 4).join(', ')
     : factsheet.metaDesc || 'our bespoke products and services'

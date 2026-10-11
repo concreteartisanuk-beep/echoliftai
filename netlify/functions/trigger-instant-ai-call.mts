@@ -213,10 +213,16 @@ Rules:
           const audioStreamUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(spokenText)}`
           const pIdStr = prospectId ? String(prospectId) : ''
 
+          // Pre-warm the greeting audio stream immediately so it is pre-cached in memory & DB before pickup
+          fetch(audioStreamUrl).catch((e) => console.warn('Pre-warm greeting failed:', e))
+
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Play>${audioStreamUrl}</Play>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="apexvoice, echolift, services, quote, pricing, cost, location, contact, phone">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="concreet, microcement, apexvoice, echolift, services, quote, pricing, cost, location, contact, phone, bathrooms, wet rooms, showers, kitchen, worktop, floors, tiles, durable, waterproof, timescale">
+    <Play>${audioStreamUrl}</Play>
+  </Gather>
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
+    <Say voice="alice" language="en-GB">Are you still there? How can I help you today?</Say>
   </Gather>
 </Response>`
 

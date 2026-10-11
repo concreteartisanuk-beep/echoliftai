@@ -501,3 +501,38 @@ export const recordOutcome = async (
     VALUES (${prospect.id}, ${type}, ${prospect.business_name}, ${prospect.contact_person}, ${outcome})
   `
 }
+
+/* ------------------------------------------------------------- audio cache */
+
+/** Retrieve pre-rendered ElevenLabs audio base64 from database cache */
+export const getCachedAudio = async (cacheKey: string): Promise<string | null> => {
+  try {
+    const rows = (await db().sql`
+      SELECT audio_base64 FROM apexvoice_audio_cache WHERE cache_key = ${cacheKey} LIMIT 1
+    `) as { audio_base64: string }[]
+    return rows[0]?.audio_base64 ?? null
+  } catch {
+    return null
+  }
+}
+
+/** Store pre-rendered ElevenLabs audio base64 in database cache for instant replay */
+export const setCachedAudio = async (cacheKey: string, audioBase64: string): Promise<void> => {
+  try {
+    await db().sql`
+      CREATE TABLE IF NOT EXISTS apexvoice_audio_cache (
+        cache_key VARCHAR(255) PRIMARY KEY,
+        audio_base64 TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `
+    await db().sql`
+      INSERT INTO apexvoice_audio_cache (cache_key, audio_base64)
+      VALUES (${cacheKey}, ${audioBase64})
+      ON CONFLICT (cache_key) DO UPDATE SET audio_base64 = EXCLUDED.audio_base64
+    `
+  } catch (err) {
+    console.warn('Audio cache write warning:', err)
+  }
+}
+

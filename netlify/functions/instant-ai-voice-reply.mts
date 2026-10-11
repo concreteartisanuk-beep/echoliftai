@@ -131,6 +131,7 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
   const lower = query.toLowerCase().trim()
   const company = factsheet.company
   const contact = factsheet.contact
+  const contactFirst = contact ? contact.split(' ')[0].toLowerCase() : ''
   const navPattern = /\b(?:home|about|contact|sign in|cookie|privacy|basket|cart|shop|checkout|menu|search|account|login)\b/i
   const services = (factsheet.productsAndServices || []).filter((s) => !navPattern.test(s) && !/[🛒🛍️📦]/u.test(s))
   const servicesSummary = services.length
@@ -233,7 +234,10 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
     'prices', 'appointment', 'appointments', 'times', 'dates', 'help', 'call',
     'calls', 'someone', 'people', 'team', 'tell', 'about', 'need', 'want',
     'doing', 'offer', 'provide', 'make', 'makes', 'sell', 'sells',
-    'polished', 'commercial', 'residential', 'domestic', 'bespoke', 'custom', 'luxury'
+    'polished', 'commercial', 'residential', 'domestic', 'bespoke', 'custom', 'luxury',
+    // Common material / medium modifiers
+    'concrete', 'wooden', 'timber', 'metal', 'steel', 'glass', 'stone', 'marble', 'granite',
+    'acrylic', 'plastic', 'ceramic', 'leather', 'fabric'
   ])
   company.toLowerCase().split(/[^a-z0-9]+/).forEach((w) => {
     if (w.length > 2) genericNouns.add(w)

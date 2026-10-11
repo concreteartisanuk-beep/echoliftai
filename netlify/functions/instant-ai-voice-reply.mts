@@ -131,8 +131,8 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
   const lower = query.toLowerCase().trim()
   const company = factsheet.company
   const contact = factsheet.contact
-  const contactFirst = contact ? contact.split(' ')[0].toLowerCase() : ''
-  const navPattern = /\b(?:home|about|contact|sign in|cookie|privacy|basket|cart|shop|checkout|menu|search|account|login)\b/i\n  const services = (factsheet.productsAndServices || []).filter(s => !navPattern.test(s) && !/[🛒🛍️📦]/u.test(s))
+  const navPattern = /\b(?:home|about|contact|sign in|cookie|privacy|basket|cart|shop|checkout|menu|search|account|login)\b/i
+  const services = (factsheet.productsAndServices || []).filter((s) => !navPattern.test(s) && !/[🛒🛍️📦]/u.test(s))
   const servicesSummary = services.length
     ? services.slice(0, 4).join(', ')
     : factsheet.metaDesc || 'our bespoke products and services'
@@ -226,32 +226,48 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
   }
 
   // 8. SPECIFIC PRODUCT / SERVICE INQUIRY ("DO YOU DO X?")
-  let matchedItem: string | null = null
-  for (const item of services) {
-    const itemWords = item
-      .toLowerCase()
-      .split(/[\s,&-]+/)
-      .filter((w) => w.length > 3 && !['with', 'from', 'your', 'cast', 'hand', 'tables', 'repair', 'services'].includes(w))
+  // Extract specific subject nouns from caller question, filtering out company name and generic meta-tokens
+  const genericNouns = new Set([
+    'services', 'service', 'products', 'product', 'work', 'works', 'business',
+    'company', 'things', 'stuff', 'quote', 'quotes', 'cost', 'costs', 'price',
+    'prices', 'appointment', 'appointments', 'times', 'dates', 'help', 'call',
+    'calls', 'someone', 'people', 'team', 'tell', 'about', 'need', 'want',
+    'doing', 'offer', 'provide', 'make', 'makes', 'sell', 'sells',
+    'polished', 'commercial', 'residential', 'domestic', 'bespoke', 'custom', 'luxury'
+  ])
+  company.toLowerCase().split(/[^a-z0-9]+/).forEach((w) => {
+    if (w.length > 2) genericNouns.add(w)
+  })
 
-    const matchedWord = itemWords.find((w) => new RegExp('\\b' + w + '\\b', 'i').test(lower))
-    if (matchedWord) {
-      matchedItem = item
-      break
+  const queryNouns = lower
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 3 && !genericNouns.has(w) && !['what', 'when', 'where', 'which', 'have', 'with', 'from', 'your', 'some', 'they', 'their', 'could', 'would'].includes(w))
+
+  let matchedItem: string | null = null
+  for (const noun of queryNouns) {
+    const singular = noun.replace(/s$/, '')
+    for (const item of services) {
+      const itemLower = item.toLowerCase()
+      // Skip if item is just the whole company name
+      if (itemLower === company.toLowerCase()) continue
+      const pattern = new RegExp('\\b' + (singular.length > 3 ? singular : noun) + '(?:s|es|ing)?\\b', 'i')
+      if (pattern.test(itemLower)) {
+        matchedItem = item
+        break
+      }
     }
+    if (matchedItem) break
   }
 
   if (matchedItem) {
     return `Yes! At ${company} we specialize in ${matchedItem.toLowerCase()}. Would you like to get a quote or discuss options with ${contact}?`
   }
 
-  // 9. CHECK SCRAPED PARAGRAPHS FOR FACTUAL ANSWERS
-  if (factsheet.paragraphs && factsheet.paragraphs.length) {
+  // 9. CHECK SCRAPED PARAGRAPHS FOR FACTUAL ANSWERS ONLY IF SPECIFIC NOUN MATCHES
+  if (factsheet.paragraphs && factsheet.paragraphs.length && queryNouns.length > 0) {
     for (const p of factsheet.paragraphs) {
-      const pWords = lower
-        .replace(/[^a-z0-9 ]/g, '')
-        .split(' ')
-        .filter((w) => w.length > 4 && !['about', 'there', 'their', 'which', 'would', 'could'].includes(w))
-      const matches = pWords.filter((w) => new RegExp('\\b' + w + '\\b', 'i').test(p)).length
+      const matches = queryNouns.filter((w) => new RegExp('\\b' + w + '\\b', 'i').test(p)).length
       if (matches >= 2) {
         const sentence = p.split(/(?<=[.!?])\s+/)[0]
         return `At ${company}, ${sentence}. Would you like me to have ${contact} follow up with full details?`
@@ -259,8 +275,8 @@ const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => 
     }
   }
 
-  // 10. RELEVANT NEGATIVE / ACTIVE RECEPTIONIST RESPONSE (Never claims to do things not on website!)
-  return `At ${company}, we specialize primarily in ${servicesSummary}. If you have a specific requirement, I would be happy to take your details and have ${contact} call you back today. Would you like me to arrange that?`
+  // 10. GROUNDED RECEPTIONIST RESPONSE (Never claims to do things not on website!)
+  return `At ${company}, we specialize primarily in ${servicesSummary}. If you need ${queryNouns[0] || 'that'}, I would be happy to take your details and have ${contact} call you back today. Would you like me to arrange that?`
 }
 
 export default async (req: Request) => {

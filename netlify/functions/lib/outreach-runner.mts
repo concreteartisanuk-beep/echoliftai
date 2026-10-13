@@ -132,12 +132,22 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
   const ownerPhoneDigits = '7494867646'
 
   try {
-    // 1. Check count of fresh uncontacted mobile prospects
+    // 0. Auto-clean any legacy fictional drama numbers (07700900xxx) so they never clog the pipeline
+    try {
+      await db().sql`
+        UPDATE apexvoice_prospects
+        SET status = 'Invalid Drama Number'
+        WHERE phone LIKE '%7700900%' OR phone LIKE '%7700 900%'
+      `
+    } catch {}
+
+    // 1. Check count of fresh uncontacted mobile prospects (valid UK mobiles only, no drama numbers)
     const freshRows = (await db().sql`
       SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
       ORDER BY warmth_score DESC, id DESC
       LIMIT 50
@@ -149,7 +159,7 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
 
       for (const item of CURATED_TRADE_DIRECTORY) {
         const fingerprint = phoneFingerprint(item.phone)
-        if (fingerprint.endsWith(ownerPhoneDigits)) continue
+        if (fingerprint.endsWith(ownerPhoneDigits) || fingerprint.includes('7700900')) continue
 
         // Check if already in database by last 9 digits of phone number
         const existing = (await db().sql`
@@ -188,6 +198,7 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
       ORDER BY warmth_score DESC, id DESC
       LIMIT 30
@@ -203,6 +214,7 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
         WHERE status = 'Contacted'
           AND phone IS NOT NULL AND phone != ''
           AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
+          AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
           AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
           AND (last_interaction IS NULL OR last_interaction < (NOW() - INTERVAL '48 HOURS')::text)
         ORDER BY warmth_score DESC, id ASC
@@ -271,6 +283,15 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
         result.failedCount++
         console.error(`SMS outreach failed for ${prospect.phone}:`, smsResult.error)
         result.details.push(`Failed for ${biz} (${prospect.phone}): ${smsResult.error}`)
+        // Update to Delivery Failed so invalid numbers never block subsequent batches
+        await recordOutcome(
+          prospect,
+          'SMS',
+          `Carrier Rejection: ${(smsResult.error || 'Failed').slice(0, 80)}`,
+          'Delivery Failed',
+          new Date().toISOString(),
+          0
+        )
       }
 
       // 250ms spacing between Twilio requests for carrier compliance
@@ -283,6 +304,7 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
     `) as any[]
 

@@ -1183,6 +1183,32 @@ function setupEventListeners() {
     });
   }
 
+  // Immediate outreach batch trigger button
+  const triggerOutreachBtn = document.getElementById('trigger-outreach-btn');
+  if (triggerOutreachBtn) {
+    triggerOutreachBtn.addEventListener('click', async () => {
+      if (!confirm('Dispatch an immediate live outreach batch (6-8 SMS messages) to queued prospects?')) return;
+      triggerOutreachBtn.disabled = true;
+      triggerOutreachBtn.innerHTML = '<i data-lucide="loader"></i> Sending batch...';
+      try {
+        const res = await fetch('/api/trigger-outreach', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          alert(`Outreach batch dispatched successfully!\n\n• Initial Pitches Sent: ${data.smsSent}\n• Follow-ups Sent: ${data.followupsSent}\n• Fresh Prospects Remaining: ${data.freshRemaining}`);
+          await loadAllData();
+        } else {
+          alert(`Outreach response: ${JSON.stringify(data)}`);
+        }
+      } catch (err) {
+        alert(`Failed to trigger outreach: ${err.message}`);
+      } finally {
+        triggerOutreachBtn.disabled = false;
+        triggerOutreachBtn.innerHTML = '<i data-lucide="send"></i> Dispatch Outreach Batch (SMS)';
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  }
+
   // Lead manual modal buttons
   const addLeadBtn = document.getElementById('add-lead-btn');
   const modal = document.getElementById('add-lead-modal');

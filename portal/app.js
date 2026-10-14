@@ -491,6 +491,11 @@ function renderLeadsTable() {
       </td>
       <td class="text-right">
         <div class="table-actions">
+          ${!isMobile && lead.phone ? `
+            <button class="btn-table-icon" style="color: #3b82f6;" title="Dispatch Outbound AI Sales Call to Landline" data-action="dial-landline" data-id="${esc(lead.id)}">
+              <i data-lucide="phone-outgoing"></i>
+            </button>
+          ` : ''}
           <button class="btn-table-icon" title="Call AI Simulator" data-action="call" data-id="${esc(lead.id)}">
             <i data-lucide="phone"></i>
           </button>
@@ -1194,7 +1199,7 @@ function setupEventListeners() {
         const res = await fetch('/api/trigger-outreach', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
-          alert(`Outreach batch dispatched successfully!\n\n• Initial Pitches Sent: ${data.smsSent}\n• Follow-ups Sent: ${data.followupsSent}\n• Fresh Prospects Remaining: ${data.freshRemaining}`);
+          alert(`Outreach batch dispatched successfully!\n\n• Initial Pitches Sent: ${data.smsSent}\n• Follow-ups Sent: ${data.followupsSent}\n• AI Voice Calls Placed: ${data.callsSent || 0}\n• Fresh Mobiles Remaining: ${data.freshRemaining}\n• Fresh Landlines Remaining: ${data.freshLandlinesRemaining || 0}`);
           await loadAllData();
         } else {
           alert(`Outreach response: ${JSON.stringify(data)}`);
@@ -1246,13 +1251,42 @@ function setupEventListeners() {
   });
 
   // Prospect table row actions
-  document.getElementById('leads-table-body').addEventListener('click', (e) => {
+  document.getElementById('leads-table-body').addEventListener('click', async (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     const id = btn.dataset.id;
     if (btn.dataset.action === 'call') startCallSim(id);
     else if (btn.dataset.action === 'sms') startSmsSim(id);
     else if (btn.dataset.action === 'delete') deleteLead(id);
+    else if (btn.dataset.action === 'dial-landline') {
+      const lead = state.leads.find(l => String(l.id) === String(id));
+      if (!lead) return;
+      if (!confirm(`Dispatch an automated AI receptionist pitch call to ${lead.businessName} at landline ${lead.phone}?`)) return;
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/trigger-instant-ai-call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: lead.contactPerson || 'Business Owner',
+            company: lead.businessName,
+            website: lead.website || '',
+            phone: lead.phone
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`AI Outbound Call Dispatched to ${lead.businessName} (${lead.phone})! Our AI receptionist is placing the call now.`);
+          await loadAllData();
+        } else {
+          alert(`Call dispatch status: ${data.error || 'Request sent'}`);
+        }
+      } catch (err) {
+        alert('Could not dispatch call: ' + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
   });
 
   // Lead finder search form

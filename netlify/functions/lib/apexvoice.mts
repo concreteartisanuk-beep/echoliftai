@@ -459,7 +459,10 @@ export async function callLandline(
 ): Promise<VoiceCallResult> {
   const sid = getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')
   const token = getEnv('TWILIO_AUTH_TOKEN')
-  const from = getEnv('TWILIO_FROM_NUMBER') || getEnv('TWILIO_PHONE_NUMBER') || '+441914062323'
+  let from = getEnv('TWILIO_PHONE_NUMBER') || getEnv('TWILIO_FROM_NUMBER') || '+441914062323'
+  if (from === 'EchoLift' || !from.startsWith('+')) {
+    from = '+441914062323'
+  }
 
   if (!sid || !token) {
     return { ok: false, error: 'Twilio Voice is not configured.' }

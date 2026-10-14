@@ -5,11 +5,11 @@ export default async () => {
   console.log('🚀 Running automated high-volume prospect outreach batch...')
 
   try {
-    // Dispatch 8 high-intent prospect outreach SMS messages per run
-    // Scheduled 5x daily = 40 SMS messages per day
-    const result = await runOutreachBatch(8)
+    // Dispatch 8 mobile SMS + 3 landline AI sales calls per run
+    // Scheduled 5x daily = 40 SMS + 15 AI Voice phone calls per day
+    const result = await runOutreachBatch(8, 3)
 
-    console.log(`✅ Outreach batch finished: ${result.smsSent} initial pitches sent, ${result.followupsSent} follow-ups sent. ${result.freshRemaining} fresh prospects remaining.`)
+    console.log(`✅ Outreach batch finished: ${result.smsSent} SMS sent, ${result.callsSent} landline calls placed. ${result.freshRemaining} fresh mobiles and ${result.freshLandlinesRemaining} fresh landlines remaining.`)
 
     return Response.json(result)
   } catch (error: any) {

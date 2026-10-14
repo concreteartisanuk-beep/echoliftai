@@ -4,8 +4,8 @@ export default async () => {
   console.log('🚀 Triggering on-demand ApexVoice prospect outreach batch...')
 
   try {
-    // Run an immediate batch of 6 real prospect outreach SMS messages
-    const result = await runOutreachBatch(6)
+    // Run an immediate batch of 6 prospect outreach SMS messages and 2 landline AI sales calls
+    const result = await runOutreachBatch(6, 2)
 
     return Response.json(result, {
       headers: {

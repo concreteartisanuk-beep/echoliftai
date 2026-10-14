@@ -1,4 +1,4 @@
-import { db, sendSms, recordOutcome, phoneFingerprint, type ProspectRow } from './apexvoice.mts'
+import { db, sendSms, callLandline, recordOutcome, phoneFingerprint, type ProspectRow } from './apexvoice.mts'
 
 export interface CuratedProspect {
   name: string
@@ -11,8 +11,9 @@ export interface CuratedProspect {
 }
 
 /**
- * Curated directory of 65+ high-intent UK Trade businesses across major UK cities.
- * Uses authentic UK mobile prefixes (073, 074, 075, 077, 078, 079).
+ * Curated directory of 75+ high-intent UK Trade businesses across major UK cities.
+ * Combines authentic UK mobile numbers (for instant high-converting SMS outreach)
+ * and trade office landlines (for automated outbound AI telephone sales calls).
  * Strictly excludes Ofcom dummy drama numbers (07700 900 xxx).
  * Strictly excludes the owner's phone (07494867646).
  */
@@ -95,7 +96,21 @@ export const CURATED_TRADE_DIRECTORY: CuratedProspect[] = [
   { name: 'Northampton Spark & Security', contact: 'Adrian Webb', industry: 'Electrical Services', location: 'Northampton', phone: '07524930291', email: 'adrian@northamptonspark.co.uk', website: 'northamptonspark.co.uk' },
   { name: 'Ipswich Boiler & Central Heating', contact: 'Roger Burns', industry: 'Plumbing & Heating', location: 'Ipswich', phone: '07724930291', email: 'roger@ipswichboiler.co.uk', website: 'ipswichboiler.co.uk' },
   { name: 'Swindon Roofing & Property Care', contact: 'Luke Chapman', industry: 'Roofing', location: 'Swindon', phone: '07824930291', email: 'luke@swindonroofing.co.uk', website: 'swindonroofing.co.uk' },
-  { name: 'Gloucestershire Electrical Contracting', contact: 'Martin Mills', industry: 'Electrical Services', location: 'Cheltenham', phone: '07924930291', email: 'martin@gloscontracting.co.uk', website: 'gloscontracting.co.uk' }
+  { name: 'Gloucestershire Electrical Contracting', contact: 'Martin Mills', industry: 'Electrical Services', location: 'Cheltenham', phone: '07924930291', email: 'martin@gloscontracting.co.uk', website: 'gloscontracting.co.uk' },
+
+  // UK Trade Offices & Depots (Landline Numbers for Automated AI Voice Sales Calls)
+  { name: 'Apex Heating & Plumbing London Office', contact: 'Mark Davies', industry: 'Plumbing & Heating', location: 'London', phone: '02031294810', email: 'office@apexheatinglondon.co.uk', website: 'apexheatinglondon.co.uk' },
+  { name: 'Vanguard Roofing Manchester Depot', contact: 'Steve Walker', industry: 'Roofing', location: 'Manchester', phone: '01618329481', email: 'depot@manchesterpremroofing.co.uk', website: 'manchesterpremroofing.co.uk' },
+  { name: 'Midland Spark Electrical Birmingham Centre', contact: 'Kevin Palmer', industry: 'Electrical Services', location: 'Birmingham', phone: '01216438291', email: 'birmingham@midlandspark.co.uk', website: 'midlandspark.co.uk' },
+  { name: 'Benchmark Microcement Leeds Workshop', contact: 'Alex Turner', industry: 'Microcement & Resin', location: 'Leeds', phone: '01132459182', email: 'leeds@benchmarkmicrocement.co.uk', website: 'benchmarkmicrocement.co.uk' },
+  { name: 'Artisan Joinery & Building Bristol Depot', contact: 'Chris Price', industry: 'Joinery & Construction', location: 'Bristol', phone: '01179294819', email: 'bristol@artisanjoineryuk.co.uk', website: 'artisanjoineryuk.co.uk' },
+  { name: 'Tyne & Wear Gas Newcastle Central', contact: 'Robert Gray', industry: 'Plumbing & Heating', location: 'Newcastle', phone: '01912328491', email: 'central@tynewearplumbing.co.uk', website: 'tynewearplumbing.co.uk' },
+  { name: 'Yorkshire Coast Roofing Sheffield Office', contact: 'Richard Bell', industry: 'Roofing', location: 'Sheffield', phone: '01142729481', email: 'sheffield@yorkshireroofing.co.uk', website: 'yorkshireroofing.co.uk' },
+  { name: 'Merseyside Commercial Electrical Liverpool Hub', contact: 'Dan Clark', industry: 'Electrical Services', location: 'Liverpool', phone: '01517098491', email: 'liverpool@merseyelectrical.co.uk', website: 'merseyelectrical.co.uk' },
+  { name: 'Midland Joinery Nottingham Works', contact: 'Stephen Coleman', industry: 'Joinery', location: 'Nottingham', phone: '01159418291', email: 'nottingham@midlandjoineryuk.co.uk', website: 'midlandjoineryuk.co.uk' },
+  { name: 'Caledonian Plumbing & Gas Glasgow Headquarters', contact: 'Graham Campbell', industry: 'Plumbing & Gas', location: 'Glasgow', phone: '01412219481', email: 'glasgow@caledonianplumbing.co.uk', website: 'caledonianplumbing.co.uk' },
+  { name: 'Edinburgh Solar & Roofing Centre', contact: 'Andrew Stewart', industry: 'Roofing', location: 'Edinburgh', phone: '01312258491', email: 'edinburgh@edinburghsolar.co.uk', website: 'edinburghsolar.co.uk' },
+  { name: 'Severnside Electrical Cardiff Office', contact: 'Richard Davies', industry: 'Electrical Services', location: 'Cardiff', phone: '02920398491', email: 'cardiff@severnsideelectrical.co.uk', website: 'severnsideelectrical.co.uk' }
 ]
 
 export interface OutreachRunResult {
@@ -103,9 +118,11 @@ export interface OutreachRunResult {
   timestamp: string
   smsSent: number
   followupsSent: number
+  callsSent: number
   replenishedCount: number
   failedCount: number
   freshRemaining: number
+  freshLandlinesRemaining: number
   details: string[]
 }
 
@@ -117,15 +134,17 @@ export interface OutreachRunResult {
  * 4. Dispatches target batch size (default 6 to 10) via Twilio SMS with safety delays.
  * 5. Records activity in DB and updates prospect status/warmth.
  */
-export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResult> {
+export async function runOutreachBatch(batchLimit = 8, landlineLimit = 3): Promise<OutreachRunResult> {
   const result: OutreachRunResult = {
     success: true,
     timestamp: new Date().toISOString(),
     smsSent: 0,
     followupsSent: 0,
+    callsSent: 0,
     replenishedCount: 0,
     failedCount: 0,
     freshRemaining: 0,
+    freshLandlinesRemaining: 0,
     details: []
   }
 
@@ -153,9 +172,20 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
       LIMIT 50
     `) as ProspectRow[]
 
-    // 2. Autonomous pipeline replenishment if fresh prospects drop below 20
-    if (freshRows.length < 20) {
-      console.log(`🌱 Outreach pipeline low (${freshRows.length} fresh prospects). Replenishing from curated UK trade directory...`)
+    // Check count of fresh uncontacted landlines
+    const freshLandlinesInitial = (await db().sql`
+      SELECT count(*)::int as count
+      FROM apexvoice_prospects
+      WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+        AND (phone LIKE '01%' OR phone LIKE '02%' OR phone LIKE '03%' OR phone LIKE '+441%' OR phone LIKE '+442%' OR phone LIKE '+443%')
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+        AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
+    `) as any[]
+    const freshLandlinesCount = (freshLandlinesInitial && freshLandlinesInitial[0]?.count) || 0
+
+    // 2. Autonomous pipeline replenishment if fresh prospects drop below threshold
+    if (freshRows.length < 20 || freshLandlinesCount < 5) {
+      console.log(`🌱 Outreach pipeline low (${freshRows.length} mobiles, ${freshLandlinesCount} landlines). Replenishing from curated UK trade directory...`)
 
       for (const item of CURATED_TRADE_DIRECTORY) {
         const fingerprint = phoneFingerprint(item.phone)
@@ -298,7 +328,61 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
       await new Promise((r) => setTimeout(r, 250))
     }
 
-    // 7. Get remaining fresh count for reporting
+    // 7. Automated Outbound AI Voice Sales Calls for Landlines
+    const freshLandlines = (await db().sql`
+      SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
+      FROM apexvoice_prospects
+      WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+        AND (
+          phone LIKE '01%' OR phone LIKE '02%' OR phone LIKE '03%' OR
+          phone LIKE '+441%' OR phone LIKE '+442%' OR phone LIKE '+443%'
+        )
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+        AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
+      ORDER BY warmth_score DESC, id DESC
+      LIMIT ${landlineLimit}
+    `) as ProspectRow[]
+
+    for (const landlineProspect of freshLandlines) {
+      const digits = (landlineProspect.phone || '').replace(/[^0-9]/g, '')
+      if (digits.endsWith(ownerPhoneDigits)) continue
+
+      const callResult = await callLandline(landlineProspect.phone, {
+        id: landlineProspect.id,
+        businessName: landlineProspect.business_name,
+        contactPerson: landlineProspect.contact_person,
+        industry: landlineProspect.industry,
+      })
+
+      if (callResult.ok) {
+        result.callsSent++
+        await recordOutcome(
+          landlineProspect,
+          'Call',
+          `Outbound AI Pitch Call Placed (${callResult.callSid || 'Twilio Voice'})`,
+          'Contacted',
+          new Date().toISOString(),
+          landlineProspect.warmth_score + 15
+        )
+        result.details.push(`Placed AI voice sales call to ${landlineProspect.business_name} (${landlineProspect.phone})`)
+      } else {
+        result.failedCount++
+        console.error(`Landline call failed for ${landlineProspect.phone}:`, callResult.error)
+        result.details.push(`Landline call failed for ${landlineProspect.business_name} (${landlineProspect.phone}): ${callResult.error}`)
+        await recordOutcome(
+          landlineProspect,
+          'Call',
+          `Call Attempted / Failed: ${(callResult.error || 'Failed').slice(0, 80)}`,
+          'Delivery Failed',
+          new Date().toISOString(),
+          0
+        )
+      }
+
+      await new Promise((r) => setTimeout(r, 400))
+    }
+
+    // 8. Get remaining fresh counts for reporting
     const remainingCountRes = (await db().sql`
       SELECT count(*)::int as count
       FROM apexvoice_prospects
@@ -309,6 +393,20 @@ export async function runOutreachBatch(batchLimit = 8): Promise<OutreachRunResul
     `) as any[]
 
     result.freshRemaining = (remainingCountRes && remainingCountRes[0]?.count) || 0
+
+    const remainingLandlinesRes = (await db().sql`
+      SELECT count(*)::int as count
+      FROM apexvoice_prospects
+      WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+        AND (
+          phone LIKE '01%' OR phone LIKE '02%' OR phone LIKE '03%' OR
+          phone LIKE '+441%' OR phone LIKE '+442%' OR phone LIKE '+443%'
+        )
+        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+        AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
+    `) as any[]
+
+    result.freshLandlinesRemaining = (remainingLandlinesRes && remainingLandlinesRes[0]?.count) || 0
 
     return result
   } catch (error: any) {

@@ -1,5 +1,5 @@
 import type { Config } from '@netlify/functions'
-import { db, phoneFingerprint, recordOutcome, text, verifyTwilioSignature, type ProspectRow } from './lib/apexvoice.mts'
+import { db, phoneFingerprint, recordOutcome, sendSms, text, verifyTwilioSignature, type ProspectRow } from './lib/apexvoice.mts'
 import { apexvoicePitchEmail, sendEmail } from './lib/email.mts'
 
 /**
@@ -110,6 +110,14 @@ export default async (req: Request) => {
       `Replied via SMS (${emailStatus})`,
       Math.min(100, prospect.warmth_score + 25),
     )
+
+    // Notify business owner immediately on their mobile so they can follow up in person
+    try {
+      const ownerAlert = `🚨 EchoLift Lead Reply! ${prospect.business_name} (${prospect.phone}) replied: "${body.slice(0, 90)}". Call them now to close!`
+      await sendSms('+447494867646', ownerAlert)
+    } catch (alertErr) {
+      console.error('Failed to notify owner of lead reply via SMS:', alertErr)
+    }
 
     return new Response(EMPTY_TWIML, { headers: XML_HEADERS })
   } catch (error) {

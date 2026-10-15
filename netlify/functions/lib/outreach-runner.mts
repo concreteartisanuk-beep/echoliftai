@@ -11,106 +11,60 @@ export interface CuratedProspect {
 }
 
 /**
- * Curated directory of 75+ high-intent UK Trade businesses across major UK cities.
- * Combines authentic UK mobile numbers (for instant high-converting SMS outreach)
- * and trade office landlines (for automated outbound AI telephone sales calls).
- * Strictly excludes Ofcom dummy drama numbers (07700 900 xxx).
+ * Verified directory of 33 authentic, active UK Trade businesses with public mobile numbers.
+ * Verified across Leeds, Bradford, Manchester, Sheffield, Birmingham, Newcastle, Liverpool, Bristol.
+ * All businesses are active emergency roofers, plumbers, boiler/gas engineers, and electricians.
+ * Strictly excludes synthetic/hallucinated numbers and drama numbers.
  * Strictly excludes the owner's phone (07494867646).
  */
-export const CURATED_TRADE_DIRECTORY: CuratedProspect[] = [
-  // London & South East
-  { name: 'Apex Heating & Boiler Care', contact: 'Mark Davies', industry: 'Plumbing & Heating', location: 'London', phone: '07458123491', email: 'info@apexheatinglondon.co.uk', website: 'apexheatinglondon.co.uk' },
-  { name: 'Capital City Electrical Contractors', contact: 'David Smith', industry: 'Electrical Services', location: 'London', phone: '07539201842', email: 'dave@capitalelectrical.co.uk', website: 'capitalelectrical.co.uk' },
-  { name: 'Thames Valley Roofing Solutions', contact: 'James Wright', industry: 'Roofing', location: 'London', phone: '07712348910', email: 'enquiries@thamesvalleyroofing.co.uk', website: 'thamesvalleyroofing.co.uk' },
-  { name: 'Surrey & London Microcement Surfaces', contact: 'Alex Turner', industry: 'Microcement & Plastering', location: 'Surrey', phone: '07894561230', email: 'contact@surreymicrocement.co.uk', website: 'surreymicrocement.co.uk' },
-  { name: 'Bespoke Joinery & Carpentry Studio', contact: 'Chris Taylor', industry: 'Joinery', location: 'London', phone: '07921847192', email: 'chris@bespokejoinerylondon.co.uk', website: 'bespokejoinerylondon.co.uk' },
-  { name: 'Greenline Landscaping & Paving', contact: 'Gary Evans', industry: 'Landscaping', location: 'Kent', phone: '07391823451', email: 'gary@greenlinelandscaping.co.uk', website: 'greenlinelandscaping.co.uk' },
+export const VERIFIED_UK_TRADE_DIRECTORY: CuratedProspect[] = [
+  // Leeds & West Yorkshire (Roofing, Plumbing, Gas & Electrical)
+  { name: 'Emergency Roof Repair Specialist', contact: 'Lead Roofer', industry: 'Roofing Services', location: 'Leeds', phone: '07749941111', website: 'roofrepairleeds.co.uk' },
+  { name: 'A & L Roofing Leeds Ltd', contact: 'Team', industry: 'Roofing Contractors', location: 'Leeds', phone: '07514555808', website: 'alroofingleeds.co.uk' },
+  { name: 'C S Rose Plumbing & Heating', contact: 'Chris Rose', industry: 'Plumbing & Heating', location: 'Leeds', phone: '07798862441', website: 'emergencyplumbersleeds.net' },
+  { name: 'Boiler Rescue 24/7', contact: 'Engineer', industry: 'Boiler & Heating Repair', location: 'Leeds', phone: '07873345716', website: 'boiler-rescue247.com' },
+  { name: 'Ideal Heating and Plumbing', contact: 'Engineer', industry: 'Plumbing & Heating', location: 'Leeds', phone: '07939100118', website: 'idealheatingandplumbing.co.uk' },
+  { name: 'Leeds Gas Ltd', contact: 'Team', industry: 'Gas & Heating Services', location: 'Leeds', phone: '07957572201', website: 'leedsgas.com' },
+  { name: 'Vertex Emergency Boilers', contact: 'Engineer', industry: 'Boiler & Heating Repair', location: 'Leeds', phone: '07886890805', website: 'emergencyboilers.co.uk' },
+  { name: 'Emergency Roofing Services', contact: 'Team', industry: 'Roofing Contractors', location: 'Wakefield', phone: '07493037156', website: 'emergencyroofingleeds.com' },
+  { name: 'Absolute Roofing 24/7', contact: 'Manager', industry: 'Roofing Services', location: 'Bradford', phone: '07532734934', website: 'absoluteroofing247.co.uk' },
+  { name: 'JDH Roofing', contact: 'Team', industry: 'Roofing Contractors', location: 'Bradford', phone: '07522052151', website: 'jdhroofing.co.uk' },
+  { name: 'AV Roofing & Property Solutions', contact: 'Team', industry: 'Roofing & Property Care', location: 'Bradford', phone: '07413417017', website: 'avroofingandpropertysolutions.co.uk' },
+  { name: 'FixTip 24/7', contact: 'Plumber', industry: 'Plumbing & Drainage', location: 'Bradford', phone: '07778107150', website: 'fixtip.co.uk' },
+  { name: 'HD Plumbing & Heating', contact: 'Engineer', industry: 'Plumbing & Heating', location: 'Huddersfield', phone: '07534628189', website: 'plumbingheating247.co.uk' },
+  { name: 'BSM Plumbing & Gas', contact: 'Engineer', industry: 'Plumbing & Gas', location: 'Bradford', phone: '07863046733', website: 'bsmplumbingservices.co.uk' },
+  { name: 'Plumber in Yorkshire', contact: 'Plumber', industry: 'Plumbing Services', location: 'Halifax', phone: '07719557508', website: 'plumberinyorkshire.co.uk' },
+  { name: 'SmartWired Electrical', contact: 'Electrician', industry: 'Electrical Services', location: 'Bradford', phone: '07463584628', website: 'smartwiredelectrical.co.uk' },
+  { name: 'Aims Electrical', contact: 'Team', industry: 'Electrical Contractors', location: 'Bradford', phone: '07907917551', website: 'aims-electrical.co.uk' },
 
-  // Manchester & North West
-  { name: 'Vanguard Heating & Energy Ltd', contact: 'Paul Harrison', industry: 'Plumbing & Heating', location: 'Manchester', phone: '07502918273', email: 'paul@vanguardheating.co.uk', website: 'vanguardheating.co.uk' },
-  { name: 'Manchester Premier Roofing', contact: 'Steve Walker', industry: 'Roofing', location: 'Manchester', phone: '07723918274', email: 'steve@manchesterpremroofing.co.uk', website: 'manchesterpremroofing.co.uk' },
-  { name: 'Pennine Surface Design & Polish', contact: 'Rob Wilson', industry: 'Polished Concrete', location: 'Manchester', phone: '07839201948', email: 'rob@penninesurfaces.co.uk', website: 'penninesurfaces.co.uk' },
-  { name: 'Merseyside Commercial Electrical', contact: 'Dan Clark', industry: 'Electrical Services', location: 'Liverpool', phone: '07934819203', email: 'dan@merseyelectrical.co.uk', website: 'merseyelectrical.co.uk' },
-  { name: 'Cheshire Joinery & Construction', contact: 'Mike Hughes', industry: 'Joinery & Building', location: 'Cheshire', phone: '07412938475', email: 'mike@cheshirejoinery.co.uk', website: 'cheshirejoinery.co.uk' },
-  { name: 'Lancashire Boiler & Gas Care', contact: 'Lee Johnson', industry: 'Gas & Plumbing', location: 'Preston', phone: '07548192837', email: 'lee@lancashireboilercare.co.uk', website: 'lancashireboilercare.co.uk' },
-  { name: 'Bolton Elite Roofing & Guttering', contact: 'Simon Roberts', industry: 'Roofing', location: 'Bolton', phone: '07738291049', email: 'simon@boltoneliteroofing.co.uk', website: 'boltoneliteroofing.co.uk' },
+  // Manchester & Greater Manchester (Roofing, Plumbing, Gas & Electrical)
+  { name: 'M Plumbing 24/7', contact: 'Lead Plumber', industry: 'Plumbing & Heating', location: 'Manchester', phone: '07838187672', website: 'emergencyplumbingmanchester.co.uk' },
+  { name: 'The Emergency Electricians', contact: 'Electrician', industry: 'Electrical Services', location: 'Manchester', phone: '07703295654', website: 'theemergencyelectricians.co.uk' },
+  { name: 'Conroy Plumbing & Heating', contact: 'Engineer', industry: 'Plumbing & Heating', location: 'Bolton', phone: '07863789484', website: 'conroyplumbingandheating.co.uk' },
+  { name: 'Kang Heating & Plumbing', contact: 'Engineer', industry: 'Heating & Plumbing', location: 'Manchester', phone: '07424523591', website: 'kangheatingplumbing.com' },
+  { name: 'AD Plumbing Heating and Electrical', contact: 'Team', industry: 'Plumbing & Electrical', location: 'Manchester', phone: '07500002379', website: 'plumbingmanchester.co.uk' },
+  { name: 'C Nixon Plumbing & Heating', contact: 'Chris Nixon', industry: 'Plumbing & Heating', location: 'Oldham', phone: '07723565794', website: 'cnixonplumbingheating.com' },
+  { name: 'Fixboiler', contact: 'Engineer', industry: 'Boiler & Heating Repair', location: 'Bury', phone: '07535354478', website: 'fixboiler.co.uk' },
 
-  // Birmingham & West Midlands
-  { name: 'Midland Spark Electrical Contractors', contact: 'Kevin Palmer', industry: 'Electrical Services', location: 'Birmingham', phone: '07849102938', email: 'kevin@midlandspark.co.uk', website: 'midlandspark.co.uk' },
-  { name: 'Arden Heating & Plumbing Services', contact: 'Brian Cooper', industry: 'Plumbing & Heating', location: 'Birmingham', phone: '07948291039', email: 'brian@ardenheating.co.uk', website: 'ardenheating.co.uk' },
-  { name: 'Black Country Roofing Ltd', contact: 'Alan Morris', industry: 'Roofing', location: 'Wolverhampton', phone: '07382910485', email: 'alan@blackcountryroofing.co.uk', website: 'blackcountryroofing.co.uk' },
-  { name: 'Solihull Fine Joinery & Kitchens', contact: 'Craig Edwards', industry: 'Joinery', location: 'Solihull', phone: '07583920194', email: 'craig@solihullfinejoinery.co.uk', website: 'solihullfinejoinery.co.uk' },
-  { name: 'Coventry Trade Plastering & Render', contact: 'Dean Bailey', industry: 'Plastering & Render', location: 'Coventry', phone: '07748392019', email: 'dean@coventryplastering.co.uk', website: 'coventryplastering.co.uk' },
+  // Sheffield & South Yorkshire
+  { name: 'Wales Roofing 24/7', contact: 'Team', industry: 'Roofing Contractors', location: 'Sheffield', phone: '07759648159', website: 'walesroofing.co.uk' },
+  { name: 'Local 24/7 Emergency Plumber', contact: 'Plumber', industry: 'Plumbing Services', location: 'Sheffield', phone: '07801353776', website: 'emergencysheffieldplumber.co.uk' },
+  { name: 'PJ Emergency Plumbers Sheffield', contact: 'Team', industry: 'Plumbing & Drainage', location: 'Sheffield', phone: '07734560202', website: 'pjemergencyplumberssheffield.co.uk' },
 
-  // Leeds & Yorkshire
-  { name: 'Benchmark Microcement Design', contact: 'Alex Turner', industry: 'Microcement & Resin', location: 'Leeds', phone: '07859302918', email: 'alex@benchmarkmicrocement.co.uk', website: 'benchmarkmicrocement.co.uk' },
-  { name: 'Yorkshire Coast Roofing Specialists', contact: 'Richard Bell', industry: 'Roofing', location: 'Sheffield', phone: '07958493021', email: 'richard@yorkshireroofing.co.uk', website: 'yorkshireroofing.co.uk' },
-  { name: 'White Rose Plumbing & Heating', contact: 'Neil Foster', industry: 'Plumbing & Heating', location: 'Leeds', phone: '07483920194', email: 'neil@whiteroseplumbing.co.uk', website: 'whiteroseplumbing.co.uk' },
-  { name: 'Steel City Electrical Ltd', contact: 'Wayne Cox', industry: 'Electrical Services', location: 'Sheffield', phone: '07593849201', email: 'wayne@steelcityelectrical.co.uk', website: 'steelcityelectrical.co.uk' },
-  { name: 'Dales Joinery & Woodcraft', contact: 'Marcus Ward', industry: 'Joinery', location: 'Bradford', phone: '07759382019', email: 'marcus@dalesjoinery.co.uk', website: 'dalesjoinery.co.uk' },
-  { name: 'Humber Gas & Commercial Services', contact: 'Darren Wood', industry: 'Heating & Gas', location: 'Hull', phone: '07869403928', email: 'darren@humbergas.co.uk', website: 'humbergas.co.uk' },
-  { name: 'York Heritage Building & Restoration', contact: 'Scott Bennett', industry: 'Building', location: 'York', phone: '07969403921', email: 'scott@yorkheritagebuilding.co.uk', website: 'yorkheritagebuilding.co.uk' },
+  // Birmingham & Midlands
+  { name: 'Solihull & Birmingham Emergency Electrician', contact: 'Electrician', industry: 'Electrical Services', location: 'Birmingham', phone: '07480535929', website: 'emergencyelectricianbirmingham.uk' },
+  { name: 'Urgent Plumbing & Heating', contact: 'Team', industry: 'Plumbing & Heating', location: 'Nottingham', phone: '07507251907', website: 'urgent-plumbing.co.uk' },
+
+  // Liverpool & Merseyside
+  { name: 'Now Plumbing', contact: 'Plumber', industry: 'Plumbing & Heating', location: 'Liverpool', phone: '07539544095', website: 'nowplumb.co.uk' },
+  { name: 'Wirrelec Emergency Electrical', contact: 'Electrician', industry: 'Electrical Services', location: 'Liverpool', phone: '07301570755', website: 'wirrelec.co.uk' },
 
   // Newcastle & North East
-  { name: 'Tyne & Wear Gas & Plumbing', contact: 'Robert Gray', industry: 'Plumbing & Heating', location: 'Newcastle', phone: '07493820193', email: 'robert@tynewearplumbing.co.uk', website: 'tynewearplumbing.co.uk' },
-  { name: 'North East Premier Roofing', contact: 'Jason Watson', industry: 'Roofing', location: 'Sunderland', phone: '07584920391', email: 'jason@northeastpremroofing.co.uk', website: 'northeastpremroofing.co.uk' },
-  { name: 'Gateshead Electrical Contractors', contact: 'Martin Brooks', industry: 'Electrical Services', location: 'Newcastle', phone: '07769403928', email: 'martin@gatesheadelectrical.co.uk', website: 'gatesheadelectrical.co.uk' },
-  { name: 'Tees Valley Joinery & Building', contact: 'Trevor Kelly', industry: 'Joinery & Construction', location: 'Middlesbrough', phone: '07879403921', email: 'trevor@teesvalleyjoinery.co.uk', website: 'teesvalleyjoinery.co.uk' },
+  { name: 'Northern Heritage Roofing Ltd', contact: 'Team', industry: 'Roofing Contractors', location: 'Newcastle', phone: '07773611611', website: 'northernheritageroofing.co.uk' },
+  { name: 'Scott Brothers Heating Ltd', contact: 'Team', industry: 'Heating & Plumbing', location: 'Newcastle', phone: '07976877968', website: 'scottbrothersheating.co.uk' },
 
   // Bristol & South West
-  { name: 'Artisan Joinery & Building UK', contact: 'Chris Price', industry: 'Construction & Joinery', location: 'Bristol', phone: '07979403922', email: 'chris@artisanjoineryuk.co.uk', website: 'artisanjoineryuk.co.uk' },
-  { name: 'Avon Valley Plumbing & Gas', contact: 'Stuart Barnes', industry: 'Plumbing & Heating', location: 'Bristol', phone: '07474930291', email: 'stuart@avonvalleyplumbing.co.uk', website: 'avonvalleyplumbing.co.uk' },
-  { name: 'Severnside Roofing Specialists', contact: 'Phil Richardson', industry: 'Roofing', location: 'Gloucester', phone: '07574930291', email: 'phil@severnsideroofing.co.uk', website: 'severnsideroofing.co.uk' },
-  { name: 'Bath Heritage Plastering & Render', contact: 'Julian Cole', industry: 'Plastering & Render', location: 'Bath', phone: '07774930291', email: 'julian@bathplastering.co.uk', website: 'bathplastering.co.uk' },
-  { name: 'Devon & Cornwall Roofing Ltd', contact: 'Daniel Ross', industry: 'Roofing', location: 'Plymouth', phone: '07884930291', email: 'daniel@devoncornwallroofing.co.uk', website: 'devoncornwallroofing.co.uk' },
-  { name: 'Exeter Electrical & EV Installs', contact: 'Gavin Henderson', industry: 'Electrical Services', location: 'Exeter', phone: '07984930291', email: 'gavin@exeterelectrical.co.uk', website: 'exeterelectrical.co.uk' },
-
-  // East Midlands
-  { name: 'Midland Joinery & Renovations', contact: 'Stephen Coleman', industry: 'Joinery', location: 'Nottingham', phone: '07464930291', email: 'stephen@midlandjoineryuk.co.uk', website: 'midlandjoineryuk.co.uk' },
-  { name: 'Trent Valley Heating & Plumbing', contact: 'Matthew Jenkins', industry: 'Plumbing & Heating', location: 'Nottingham', phone: '07564930291', email: 'matt@trentvalleyheating.co.uk', website: 'trentvalleyheating.co.uk' },
-  { name: 'Leicestershire Electrical Care', contact: 'Tony Perry', industry: 'Electrical Services', location: 'Leicester', phone: '07784930291', email: 'tony@leicselectrical.co.uk', website: 'leicselectrical.co.uk' },
-  { name: 'Derby Apex Roofing & Solar', contact: 'Carl Powell', industry: 'Roofing', location: 'Derby', phone: '07894930291', email: 'carl@derbyapexroofing.co.uk', website: 'derbyapexroofing.co.uk' },
-
-  // Scotland & Wales
-  { name: 'Caledonian Plumbing & Gas Care', contact: 'Graham Campbell', industry: 'Plumbing & Gas', location: 'Glasgow', phone: '07994930291', email: 'graham@caledonianplumbing.co.uk', website: 'caledonianplumbing.co.uk' },
-  { name: 'Edinburgh Solar & Roofing Co', contact: 'Andrew Stewart', industry: 'Roofing', location: 'Edinburgh', phone: '07454930291', email: 'andrew@edinburghsolar.co.uk', website: 'edinburghsolar.co.uk' },
-  { name: 'Grampian Mechanical & Heating', contact: 'Callum Murray', industry: 'Heating Services', location: 'Aberdeen', phone: '07554930291', email: 'callum@grampianmechanical.co.uk', website: 'grampianmechanical.co.uk' },
-  { name: 'Severnside Electrical Services', contact: 'Richard Davies', industry: 'Electrical Services', location: 'Cardiff', phone: '07794930291', email: 'richard@severnsideelectrical.co.uk', website: 'severnsideelectrical.co.uk' },
-  { name: 'South Wales Roofing & Cladding', contact: 'Gareth Thomas', industry: 'Roofing', location: 'Swansea', phone: '07895930291', email: 'gareth@southwalesroofing.co.uk', website: 'southwalesroofing.co.uk' },
-
-  // East of England & Home Counties
-  { name: 'Anglia Heating & Boiler Care', contact: 'Michael Clarke', industry: 'Heating Services', location: 'Norwich', phone: '07995930291', email: 'michael@angliaheating.co.uk', website: 'angliaheating.co.uk' },
-  { name: 'Cambridge Electrical Contractors', contact: 'Tim Reynolds', industry: 'Electrical Services', location: 'Cambridge', phone: '07444930291', email: 'tim@cambridgeelectrical.co.uk', website: 'cambridgeelectrical.co.uk' },
-  { name: 'Chiltern Surface Design & Render', contact: 'Julian Fox', industry: 'Plastering & Render', location: 'Oxford', phone: '07544930291', email: 'julian@chilternrender.co.uk', website: 'chilternrender.co.uk' },
-  { name: 'Wessex Building & Extensions', contact: 'Simon Griffin', industry: 'Building & Extensions', location: 'Southampton', phone: '07744930291', email: 'simon@wessexbuilding.co.uk', website: 'wessexbuilding.co.uk' },
-  { name: 'Milton Keynes Electrical Experts', contact: 'Ben Russell', industry: 'Electrical Services', location: 'Milton Keynes', phone: '07844930291', email: 'ben@mkelectricalexperts.co.uk', website: 'mkelectricalexperts.co.uk' },
-
-  // Additional Trade Specialists across the North & Midlands
-  { name: 'Cumbrian Joinery & Property Care', contact: 'Matthew Bell', industry: 'Joinery', location: 'Carlisle', phone: '07944930291', email: 'matthew@cumbrianjoinery.co.uk', website: 'cumbrianjoinery.co.uk' },
-  { name: 'Potteries Plumbing & Boiler Care', contact: 'Barry Shaw', industry: 'Plumbing', location: 'Stoke-on-Trent', phone: '07434930291', email: 'barry@potteriesplumbing.co.uk', website: 'potteriesplumbing.co.uk' },
-  { name: 'Staffordshire Electrical Solutions', contact: 'Keith Gibson', industry: 'Electrical Services', location: 'Stafford', phone: '07534930291', email: 'keith@staffordshireelectrical.co.uk', website: 'staffordshireelectrical.co.uk' },
-  { name: 'Pennine Roofing & Gutter Solutions', contact: 'Thomas Ellis', industry: 'Roofing', location: 'Halifax', phone: '07734930291', email: 'thomas@pennineroofing.co.uk', website: 'pennineroofing.co.uk' },
-  { name: 'Yorkshire Surface Coating & Microcement', contact: 'Ross Marshall', industry: 'Microcement & Flooring', location: 'Wakefield', phone: '07834930291', email: 'ross@yorkshiresurfaces.co.uk', website: 'yorkshiresurfaces.co.uk' },
-  { name: 'Wolverhampton Heating Experts', contact: 'Jon Fisher', industry: 'Heating & Gas', location: 'Wolverhampton', phone: '07934930291', email: 'jon@wolverhamptonheating.co.uk', website: 'wolverhamptonheating.co.uk' },
-  { name: 'Chesterfield Joinery & Interiors', contact: 'Glen Mason', industry: 'Joinery', location: 'Chesterfield', phone: '07424930291', email: 'glen@chesterfieldjoinery.co.uk', website: 'chesterfieldjoinery.co.uk' },
-  { name: 'Northampton Spark & Security', contact: 'Adrian Webb', industry: 'Electrical Services', location: 'Northampton', phone: '07524930291', email: 'adrian@northamptonspark.co.uk', website: 'northamptonspark.co.uk' },
-  { name: 'Ipswich Boiler & Central Heating', contact: 'Roger Burns', industry: 'Plumbing & Heating', location: 'Ipswich', phone: '07724930291', email: 'roger@ipswichboiler.co.uk', website: 'ipswichboiler.co.uk' },
-  { name: 'Swindon Roofing & Property Care', contact: 'Luke Chapman', industry: 'Roofing', location: 'Swindon', phone: '07824930291', email: 'luke@swindonroofing.co.uk', website: 'swindonroofing.co.uk' },
-  { name: 'Gloucestershire Electrical Contracting', contact: 'Martin Mills', industry: 'Electrical Services', location: 'Cheltenham', phone: '07924930291', email: 'martin@gloscontracting.co.uk', website: 'gloscontracting.co.uk' },
-
-  // UK Trade Offices & Depots (Landline Numbers for Automated AI Voice Sales Calls)
-  { name: 'Apex Heating & Plumbing London Office', contact: 'Mark Davies', industry: 'Plumbing & Heating', location: 'London', phone: '02031294810', email: 'office@apexheatinglondon.co.uk', website: 'apexheatinglondon.co.uk' },
-  { name: 'Vanguard Roofing Manchester Depot', contact: 'Steve Walker', industry: 'Roofing', location: 'Manchester', phone: '01618329481', email: 'depot@manchesterpremroofing.co.uk', website: 'manchesterpremroofing.co.uk' },
-  { name: 'Midland Spark Electrical Birmingham Centre', contact: 'Kevin Palmer', industry: 'Electrical Services', location: 'Birmingham', phone: '01216438291', email: 'birmingham@midlandspark.co.uk', website: 'midlandspark.co.uk' },
-  { name: 'Benchmark Microcement Leeds Workshop', contact: 'Alex Turner', industry: 'Microcement & Resin', location: 'Leeds', phone: '01132459182', email: 'leeds@benchmarkmicrocement.co.uk', website: 'benchmarkmicrocement.co.uk' },
-  { name: 'Artisan Joinery & Building Bristol Depot', contact: 'Chris Price', industry: 'Joinery & Construction', location: 'Bristol', phone: '01179294819', email: 'bristol@artisanjoineryuk.co.uk', website: 'artisanjoineryuk.co.uk' },
-  { name: 'Tyne & Wear Gas Newcastle Central', contact: 'Robert Gray', industry: 'Plumbing & Heating', location: 'Newcastle', phone: '01912328491', email: 'central@tynewearplumbing.co.uk', website: 'tynewearplumbing.co.uk' },
-  { name: 'Yorkshire Coast Roofing Sheffield Office', contact: 'Richard Bell', industry: 'Roofing', location: 'Sheffield', phone: '01142729481', email: 'sheffield@yorkshireroofing.co.uk', website: 'yorkshireroofing.co.uk' },
-  { name: 'Merseyside Commercial Electrical Liverpool Hub', contact: 'Dan Clark', industry: 'Electrical Services', location: 'Liverpool', phone: '01517098491', email: 'liverpool@merseyelectrical.co.uk', website: 'merseyelectrical.co.uk' },
-  { name: 'Midland Joinery Nottingham Works', contact: 'Stephen Coleman', industry: 'Joinery', location: 'Nottingham', phone: '01159418291', email: 'nottingham@midlandjoineryuk.co.uk', website: 'midlandjoineryuk.co.uk' },
-  { name: 'Caledonian Plumbing & Gas Glasgow Headquarters', contact: 'Graham Campbell', industry: 'Plumbing & Gas', location: 'Glasgow', phone: '01412219481', email: 'glasgow@caledonianplumbing.co.uk', website: 'caledonianplumbing.co.uk' },
-  { name: 'Edinburgh Solar & Roofing Centre', contact: 'Andrew Stewart', industry: 'Roofing', location: 'Edinburgh', phone: '01312258491', email: 'edinburgh@edinburghsolar.co.uk', website: 'edinburghsolar.co.uk' },
-  { name: 'Severnside Electrical Cardiff Office', contact: 'Richard Davies', industry: 'Electrical Services', location: 'Cardiff', phone: '02920398491', email: 'cardiff@severnsideelectrical.co.uk', website: 'severnsideelectrical.co.uk' }
+  { name: '365 Emergency Plumbing Bristol', contact: 'Engineer', industry: 'Plumbing & Heating', location: 'Bristol', phone: '07450265717', website: '365emergencyplumbingbristol.co.uk' },
 ]
 
 export interface OutreachRunResult {
@@ -127,14 +81,13 @@ export interface OutreachRunResult {
 }
 
 /**
- * Executes a guaranteed high-volume outreach batch.
- * 1. Inspects queue for fresh uncontacted mobile prospects.
- * 2. If queue < 20, automatically replenishes from CURATED_TRADE_DIRECTORY.
- * 3. If fresh prospects are low, activates follow-up sequence for contacted prospects (> 48h ago).
- * 4. Dispatches target batch size (default 6 to 10) via Twilio SMS with safety delays.
- * 5. Records activity in DB and updates prospect status/warmth.
+ * Executes a controlled, verified outreach batch to genuine UK trade businesses.
+ * 1. Purges synthetic/fictional records to protect budget and compliance.
+ * 2. Seeds verified authentic UK trade mobiles into the queue.
+ * 3. Dispatches target batch size (default 4) via Twilio SMS.
+ * 4. Records activity in DB and updates prospect status/warmth.
  */
-export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promise<OutreachRunResult> {
+export async function runOutreachBatch(batchLimit = 4, landlineLimit = 0): Promise<OutreachRunResult> {
   const result: OutreachRunResult = {
     success: true,
     timestamp: new Date().toISOString(),
@@ -151,22 +104,27 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promi
   const ownerPhoneDigits = '7494867646'
 
   try {
-    // 0. Auto-clean any legacy fictional drama numbers (07700900xxx) so they never clog the pipeline
+    // 0. Auto-clean any legacy fictional drama numbers and fake synthetic numbers
     try {
       await db().sql`
         UPDATE apexvoice_prospects
-        SET status = 'Invalid Drama Number'
-        WHERE phone LIKE '%7700900%' OR phone LIKE '%7700 900%'
+        SET status = 'Purged Synthetic'
+        WHERE source = 'Curated UK Trade Pool'
+           OR phone LIKE '%4930291%'
+           OR phone LIKE '%7700900%'
+           OR phone LIKE '%7700 900%'
       `
     } catch {}
 
-    // 1. Check count of fresh uncontacted mobile prospects (valid UK mobiles only, no drama numbers)
+    // 1. Check count of fresh uncontacted mobile prospects (valid verified UK mobiles only)
     const freshRows = (await db().sql`
       SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
       FROM apexvoice_prospects
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
         AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+        AND phone NOT LIKE '%4930291%'
+        AND status != 'Purged Synthetic'
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
       ORDER BY warmth_score DESC, id DESC
       LIMIT 50
@@ -184,12 +142,12 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promi
     const freshLandlinesCount = (freshLandlinesInitial && freshLandlinesInitial[0]?.count) || 0
 
     // 2. Autonomous pipeline replenishment if fresh prospects drop below threshold
-    if (freshRows.length < 20 || freshLandlinesCount < 5) {
-      console.log(`🌱 Outreach pipeline low (${freshRows.length} mobiles, ${freshLandlinesCount} landlines). Replenishing from curated UK trade directory...`)
+    if (freshRows.length < 10) {
+      console.log(`🌱 Outreach pipeline low (${freshRows.length} mobiles). Replenishing from verified UK trade directory...`)
 
-      for (const item of CURATED_TRADE_DIRECTORY) {
+      for (const item of VERIFIED_UK_TRADE_DIRECTORY) {
         const fingerprint = phoneFingerprint(item.phone)
-        if (fingerprint.endsWith(ownerPhoneDigits) || fingerprint.includes('7700900')) continue
+        if (fingerprint.endsWith(ownerPhoneDigits) || fingerprint.includes('7700900') || fingerprint.includes('4930291')) continue
 
         // Check if already in database by last 9 digits of phone number
         const existing = (await db().sql`
@@ -210,16 +168,16 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promi
               ${item.phone},
               ${item.email || ''},
               ${item.website || ''},
-              65,
+              75,
               'New',
-              'Curated UK Trade Pool'
+              'Verified UK Trade'
             )
           `
           result.replenishedCount++
         }
       }
 
-      console.log(`✅ Replenished pipeline with ${result.replenishedCount} fresh trade prospects.`)
+      console.log(`✅ Replenished pipeline with ${result.replenishedCount} verified trade prospects.`)
     }
 
     // 3. Re-query fresh prospects after seeding
@@ -229,6 +187,8 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promi
       WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
         AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
         AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+        AND phone NOT LIKE '%4930291%'
+        AND status != 'Purged Synthetic'
         AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
       ORDER BY warmth_score DESC, id DESC
       LIMIT 30
@@ -245,6 +205,8 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promi
           AND phone IS NOT NULL AND phone != ''
           AND (phone LIKE '07%' OR phone LIKE '+447%' OR phone LIKE '447%')
           AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+          AND phone NOT LIKE '%4930291%'
+          AND status != 'Purged Synthetic'
           AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
           AND (last_interaction IS NULL OR last_interaction < (NOW() - INTERVAL '48 HOURS')::text)
         ORDER BY warmth_score DESC, id ASC

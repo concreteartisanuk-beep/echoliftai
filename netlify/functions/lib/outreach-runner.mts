@@ -134,7 +134,7 @@ export interface OutreachRunResult {
  * 4. Dispatches target batch size (default 6 to 10) via Twilio SMS with safety delays.
  * 5. Records activity in DB and updates prospect status/warmth.
  */
-export async function runOutreachBatch(batchLimit = 8, landlineLimit = 3): Promise<OutreachRunResult> {
+export async function runOutreachBatch(batchLimit = 8, landlineLimit = 0): Promise<OutreachRunResult> {
   const result: OutreachRunResult = {
     success: true,
     timestamp: new Date().toISOString(),
@@ -328,58 +328,60 @@ export async function runOutreachBatch(batchLimit = 8, landlineLimit = 3): Promi
       await new Promise((r) => setTimeout(r, 250))
     }
 
-    // 7. Automated Outbound AI Voice Sales Calls for Landlines
-    const freshLandlines = (await db().sql`
-      SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
-      FROM apexvoice_prospects
-      WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
-        AND (
-          phone LIKE '01%' OR phone LIKE '02%' OR phone LIKE '03%' OR
-          phone LIKE '+441%' OR phone LIKE '+442%' OR phone LIKE '+443%'
-        )
-        AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
-        AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
-      ORDER BY warmth_score DESC, id DESC
-      LIMIT ${landlineLimit}
-    `) as ProspectRow[]
+    // 7. Outbound AI Voice Calls (Disabled by default to prevent unsolicited cold robo-calling under UK PECR / Ofcom rules)
+    if (landlineLimit > 0) {
+      const freshLandlines = (await db().sql`
+        SELECT id, business_name, contact_person, industry, location, phone, email, status, warmth_score
+        FROM apexvoice_prospects
+        WHERE status = 'New' AND phone IS NOT NULL AND phone != ''
+          AND (
+            phone LIKE '01%' OR phone LIKE '02%' OR phone LIKE '03%' OR
+            phone LIKE '+441%' OR phone LIKE '+442%' OR phone LIKE '+443%'
+          )
+          AND phone NOT LIKE '%7700900%' AND phone NOT LIKE '%7700 900%'
+          AND RIGHT(REGEXP_REPLACE(phone, '[^0-9]', '', 'g'), 10) != ${ownerPhoneDigits}
+        ORDER BY warmth_score DESC, id DESC
+        LIMIT ${landlineLimit}
+      `) as ProspectRow[]
 
-    for (const landlineProspect of freshLandlines) {
-      const digits = (landlineProspect.phone || '').replace(/[^0-9]/g, '')
-      if (digits.endsWith(ownerPhoneDigits)) continue
+      for (const landlineProspect of freshLandlines) {
+        const digits = (landlineProspect.phone || '').replace(/[^0-9]/g, '')
+        if (digits.endsWith(ownerPhoneDigits)) continue
 
-      const callResult = await callLandline(landlineProspect.phone, {
-        id: landlineProspect.id,
-        businessName: landlineProspect.business_name,
-        contactPerson: landlineProspect.contact_person,
-        industry: landlineProspect.industry,
-      })
+        const callResult = await callLandline(landlineProspect.phone, {
+          id: landlineProspect.id,
+          businessName: landlineProspect.business_name,
+          contactPerson: landlineProspect.contact_person,
+          industry: landlineProspect.industry,
+        })
 
-      if (callResult.ok) {
-        result.callsSent++
-        await recordOutcome(
-          landlineProspect,
-          'Call',
-          `Outbound AI Pitch Call Placed (${callResult.callSid || 'Twilio Voice'})`,
-          'Contacted',
-          new Date().toISOString(),
-          landlineProspect.warmth_score + 15
-        )
-        result.details.push(`Placed AI voice sales call to ${landlineProspect.business_name} (${landlineProspect.phone})`)
-      } else {
-        result.failedCount++
-        console.error(`Landline call failed for ${landlineProspect.phone}:`, callResult.error)
-        result.details.push(`Landline call failed for ${landlineProspect.business_name} (${landlineProspect.phone}): ${callResult.error}`)
-        await recordOutcome(
-          landlineProspect,
-          'Call',
-          `Call Attempted / Failed: ${(callResult.error || 'Failed').slice(0, 80)}`,
-          'Delivery Failed',
-          new Date().toISOString(),
-          0
-        )
+        if (callResult.ok) {
+          result.callsSent++
+          await recordOutcome(
+            landlineProspect,
+            'Call',
+            `Outbound AI Pitch Call Placed (${callResult.callSid || 'Twilio Voice'})`,
+            'Contacted',
+            new Date().toISOString(),
+            landlineProspect.warmth_score + 15
+          )
+          result.details.push(`Placed AI voice sales call to ${landlineProspect.business_name} (${landlineProspect.phone})`)
+        } else {
+          result.failedCount++
+          console.error(`Landline call failed for ${landlineProspect.phone}:`, callResult.error)
+          result.details.push(`Landline call failed for ${landlineProspect.business_name} (${landlineProspect.phone}): ${callResult.error}`)
+          await recordOutcome(
+            landlineProspect,
+            'Call',
+            `Call Attempted / Failed: ${(callResult.error || 'Failed').slice(0, 80)}`,
+            'Delivery Failed',
+            new Date().toISOString(),
+            0
+          )
+        }
+
+        await new Promise((r) => setTimeout(r, 400))
       }
-
-      await new Promise((r) => setTimeout(r, 400))
     }
 
     // 8. Get remaining fresh counts for reporting

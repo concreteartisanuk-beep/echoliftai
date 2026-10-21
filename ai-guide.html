@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9D0P6BP204"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9D0P6BP204');
+  </script>
+  
+  <title>The Small Business AI Playbook — Free Guide | EchoLift AI</title>
+  <meta name="description" content="A practical, no-nonsense guide for small business owners and trades. Learn how to save 10 hours a week, eliminate missed customer calls, and win more work with simple AI.">
+  <link rel="canonical" href="https://echoliftai.co.uk/ai-guide.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="EchoLift AI">
+  <meta property="og:url" content="https://echoliftai.co.uk/ai-guide.html">
+  <meta property="og:title" content="The Small Business AI Playbook — Free Guide">
+  <meta property="og:description" content="How UK small businesses and trades save 10 hours a week, stop losing £1,000+ jobs to missed calls, and automate admin with simple AI.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .guide-header {
+      padding: 6rem 0 3rem;
+      text-align: center;
+      position: relative;
+    }
+    .guide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-pill);
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid var(--border-accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .guide-title {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      margin-bottom: 1.25rem;
+      line-height: 1.15;
+    }
+    .guide-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 750px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+    .guide-meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .guide-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .guide-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 3rem;
+      padding-bottom: 6rem;
+      align-items: start;
+    }
+
+    /* Sticky Sidebar Navigation */
+    .guide-sidebar {
+      position: sticky;
+      top: 6rem;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .guide-sidebar h4 {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    .guide-toc {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .guide-toc a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-sm);
+      display: block;
+      transition: var(--transition-fast);
+      border-left: 2px solid transparent;
+    }
+    .guide-toc a:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border-left-color: var(--accent-secondary);
+    }
+    .sidebar-cta-card {
+      margin-top: 1.75rem;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, rgba(148, 163, 184, 0.12), rgba(15, 23, 42, 0.6));
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+    .sidebar-cta-card h5 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .sidebar-cta-card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    /* Main Content */
+    .guide-content {
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 3rem;
+    }
+    .guide-content h2 {
+      font-size: 1.85rem;
+      margin: 2.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-glass);
+    }
+    .guide-content h2:first-of-type {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+    .guide-content h3 {
+      font-size: 1.3rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--accent-secondary);
+    }
+    .guide-content p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+    .guide-content strong {
+      color: var(--text-primary);
+    }
+    .guide-content ul, .guide-content ol {
+      margin: 0 0 1.5rem 1.5rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .guide-content li {
+      margin-bottom: 0.5rem;
+    }
+
+    .callout-box {
+      background: rgba(148, 163, 184, 0.08);
+      border-left: 4px solid var(--accent-primary);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem 1.5rem;
+      margin: 1.75rem 0;
+    }
+    .callout-box.warning {
+      background: rgba(245, 158, 11, 0.08);
+      border-left-color: var(--status-amber);
+    }
+    .callout-box h4 {
+      font-size: 1.05rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .lead-box {
+      margin: 3rem 0;
+      padding: 2.5rem;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .lead-box h3 {
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .lead-box p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .lead-form {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 500px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .lead-form input {
+      flex: 1;
+      min-width: 240px;
+      padding: 0.85rem 1.2rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-glass);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+    .lead-form button {
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 900px) {
+      .guide-layout {
+        grid-template-columns: 1fr;
+      }
+      .guide-sidebar {
+        display: none;
+      }
+      .guide-content {
+        padding: 1.75rem;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        color: #111 !important;
+      }
+      .navbar, .guide-sidebar, .lead-box, .hero-cta-group, footer, .sidebar-cta-card, .btn-print {
+        display: none !important;
+      }
+      .guide-content {
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+      }
+      h1, h2, h3, h4, p, li, strong {
+        color: #111 !important;
+      }
+      .callout-box {
+        border: 1px solid #ccc !important;
+        background: #f9f9f9 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar glass">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <i class="fa-solid fa-bolt-lightning text-gradient-primary"></i>
+        <span>EchoLift<span class="text-gradient-secondary"> AI</span></span>
+      </a>
+      
+      <div class="nav-menu">
+        <ul class="nav-links">
+          <li><a href="/"><i class="fa-solid fa-arrow-left"></i> Back to Home</a></li>
+          <li><a href="/#live-demo-section" class="nav-highlight"><i class="fa-solid fa-phone-volume"></i> Test Call Live</a></li>
+          <li><a href="/#apexvoice-pricing">Pricing (£99/mo)</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <button type="button" class="btn btn-secondary btn-print" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Save / Print PDF
+          </button>
+          <a href="/#live-demo-section" class="btn btn-primary">Free Live Demo</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="guide-header">
+    <div class="container">
+      <div class="guide-badge">
+        <i class="fa-solid fa-book-open text-gradient-primary"></i> Free Business Playbook
+      </div>
+      <h1 class="guide-title font-heading">
+        The Small Business <span class="text-gradient-primary">AI Playbook</span>
+      </h1>
+      <p class="guide-subtitle">
+        How real UK trades and small businesses save 10 hours a week, eliminate missed calls, and win more work without touching a line of code.
+      </p>
+      <div class="guide-meta">
+        <span><i class="fa-regular fa-clock"></i> 8-minute read</span>
+        <span><i class="fa-solid fa-shield-halved"></i> 100% Practical & Jargon-Free</span>
+        <span><i class="fa-solid fa-check-double"></i> Updated for 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Body -->
+  <main class="container">
+    <div class="guide-layout">
+
+      <!-- Table of Contents Sidebar -->
+      <aside class="guide-sidebar">
+        <h4>Contents</h4>
+        <ul class="guide-toc">
+          <li><a href="#module-1">1. Cutting Through the Hype</a></li>
+          <li><a href="#module-2">2. The Missed Call Profit Leak</a></li>
+          <li><a href="#module-3">3. Killing the Admin Grind</a></li>
+          <li><a href="#module-4">4. Local Search & Reviews</a></li>
+          <li><a href="#module-5">5. The 15-Minute Action Plan</a></li>
+        </ul>
+
+        <div class="sidebar-cta-card">
+          <h5>Hear AI Answer For Your Business</h5>
+          <p>Test a live 30s phone call customized for your trade.</p>
+          <a href="/#live-demo-section" class="btn btn-primary btn-sm" style="width: 100%;">Test Live Call</a>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <article class="guide-content">
+        
+        <section id="module-1">
+          <h2>Module 1: Cutting Through the Hype</h2>
+          <p>
+            If you run a small business — whether you are a roofer, plumber, electrician, joiner, mechanic, or independent consultant — you have probably heard the word <strong>"AI"</strong> non-stop this year.
+          </p>
+          <p>
+            Most news stories make it sound like science fiction: humanoid robots, multi-billion-pound data centres, or complicated algorithms that require a computer science degree.
+          </p>
+          <p>
+            <strong>This playbook is the exact opposite of that.</strong>
+          </p>
+          
+          <div class="callout-box">
+            <h4><i class="fa-solid fa-lightbulb text-gradient-primary"></i> What AI Actually Is for a Small Business</h4>
+            <p style="margin-bottom: 0;">
+              Think of AI not as a computer brain, but as an <strong>untiring digital apprentice</strong>. It picks up your phone when your hands are full, drafts professional quotes in 30 seconds, and follows up on estimates while you're driving the van.
+            </p>
+          </div>
+
+          <p>
+            Five years ago, having a basic website was enough. If a customer called while you were on a roof or fixing a pipe, they would leave a voicemail and wait until evening for you to call back.
+          </p>
+          <p>
+            <strong>Today, customer behaviour has completely shifted:</strong>
+          </p>
+          <ul>
+            <li><strong>Over 80% of callers do not leave a voicemail.</strong> If you don't answer, they hang up immediately.</li>
+            <li>They tap the next result on Google Maps or Checkatrade.</li>
+            <li>The business that answers first or texts them back within 60 seconds wins the quote <strong>78% of the time</strong>.</li>
+          </ul>
+        </section>
+
+        <section id="module-2">
+          <h2>Module 2: The #1 Silent Profit Leak — Missed Calls</h2>
+          <p>
+            Telecom and industry surveys show that <strong>62% of incoming phone calls to small UK service businesses go unanswered</strong>.
+          </p>
+          <p>
+            The average contractor or tradesperson misses <strong>4 to 8 customer calls every week</strong> because they are on site, driving, quoting another job, or out of hours.
+          </p>
+
+          <div class="callout-box warning">
+            <h4 style="color: var(--status-amber);"><i class="fa-solid fa-triangle-exclamation"></i> The Math That Hurts:</h4>
+            <p style="margin-bottom: 0;">
+              If you miss just <strong>one</strong> £1,500 job each week because you were busy on site, that is <strong>£78,000 in lost revenue every single year</strong>. You aren't losing work because your prices are wrong or your workmanship is poor — you're losing work because your hands were covered in dust when the phone rang.
+            </p>
+          </div>
+
+          <h3>How an AI Phone Receptionist Solves This in Real Time</h3>
+          <p>
+            Modern AI telephone systems (like EchoLift's ApexVoice) do not sound like robotic 1990s voicemail trees. They speak with a warm, natural British voice:
+          </p>
+          <ol>
+            <li><strong>You Divert When Busy</strong>: Your phone only diverts when you can't pick up or after hours.</li>
+            <li><strong>2-Ring Pickup</strong>: The AI answers as your company: <em>"Hi, thanks for calling Smith Roofing & Heating. I’m Alex, the virtual assistant. The engineers are currently on a job. How can I help you today?"</em></li>
+            <li><strong>Captures the Details</strong>: It asks for their name, address/postcode, and job requirements.</li>
+            <li><strong>Instant SMS to Your Phone</strong>: Within 30 seconds, you get a clean text summary: <br/>
+            <code style="display:block; padding: 0.5rem; background: rgba(0,0,0,0.4); border-radius: 4px; margin-top: 0.5rem;">🚨 New Lead: Dave in Leeds needs a 4-bed reroof quote. Phone: 07700 900123.</code></li>
+          </ol>
+          <p>
+            You stay on site without disruption, and call them back knowing exactly what the job entails.
+          </p>
+        </section>
+
+        <!-- Inline Lead Capture Magnet -->
+        <div class="lead-box">
+          <h3><i class="fa-solid fa-envelope-open-text text-gradient-primary"></i> Want This Complete Playbook Emailed to You?</h3>
+          <p>Get the complete PDF playbook, plus our 5-part Small Business AI Checklist sent straight to your inbox.</p>
+          <form class="lead-form" id="guideLeadForm" onsubmit="handleLeadSubmit(event)">
+            <input type="email" id="leadEmail" placeholder="Enter your business email" required />
+            <button type="submit" class="btn btn-primary" id="leadSubmitBtn">
+              <i class="fa-solid fa-paper-plane"></i> Send Me the Guide
+            </button>
+          </form>
+          <div id="leadFeedback" style="margin-top: 1rem; font-size: 0.9rem; display: none;"></div>
+        </div>
+
+        <section id="module-3">
+          <h2>Module 3: Killing the Admin Grind</h2>
+          <p>
+            Most business owners finish an 8-hour day on site, only to sit at the kitchen table for another 2 hours typing out quotes and chasing up invoices. Here are two practical AI workflows that save hours:
+          </p>
+
+          <h3>1. The 30-Second Voice-to-Quote</h3>
+          <p>
+            Instead of typing proposals manually, speak a voice note into your phone as you walk back to your van:
+          </p>
+          <p style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--radius-sm); font-style: italic;">
+            "Customer wants 25 square metres of porcelain paving in the rear garden, dig out existing turf to 150mm, lay MOT Type 1 sub-base, slurry primer, light grey grout, waste skip included, total £3,200 plus VAT, two-week lead time."
+          </p>
+          <p>
+            Feed this into a free AI tool with the instruction: <em>"Turn this voice note into a polite, professional customer estimate ready to send."</em> In 10 seconds, you have a polished quote ready to text or email.
+          </p>
+
+          <h3>2. The Automated 48-Hour Quote Follow-Up</h3>
+          <p>
+            Data shows that <strong>80% of sales require 2 to 4 follow-ups</strong>, yet over 70% of trades never follow up on a quote even once. An automated message sent 48 hours later:
+          </p>
+          <p style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: var(--radius-sm); font-style: italic;">
+            "Hi Mark, just checking in to see if you had any questions on the estimate we sent over Tuesday? We have one installation slot remaining for next month if you'd like to reserve it. Cheers, Dave."
+          </p>
+          <p>
+            This single automated follow-up wins back <strong>1 in 4 quotes</strong> that would otherwise go cold.
+          </p>
+        </section>
+
+        <section id="module-4">
+          <h2>Module 4: Dominating Local Search & Customer Reviews</h2>
+          <p>
+            When someone searches <em>"emergency plumber near me"</em> or <em>"builder in Leeds"</em>, Google displays the <strong>Local 3-Pack</strong> (the map showing three local businesses).
+          </p>
+          <p>
+            Google ranks businesses based on two major factors:
+          </p>
+          <ul>
+            <li><strong>Review volume and recency</strong>: How many recent 5-star reviews you receive.</li>
+            <li><strong>Response rate</strong>: Whether the business owner replies to reviews promptly.</li>
+          </ul>
+          <p>
+            Using AI, you can automatically send a review request via SMS 1 hour after completing a job. When the customer leaves a review, AI drafts an authentic, keyword-rich reply in seconds, signalling to Google that your business is active and reliable.
+          </p>
+        </section>
+
+        <section id="module-5">
+          <h2>Module 5: The 15-Minute Blueprint</h2>
+          <p>
+            Don't try to change your entire business overnight. Take these 3 simple steps:
+          </p>
+          <ul>
+            <li><strong>Day 1: Plug the Leak</strong> — Test an AI receptionist to handle out-of-hours and missed calls so you never lose another quote.</li>
+            <li><strong>Week 1: Voice-to-Quote</strong> — Use voice dictation to generate quotes from your van instead of spending evenings at a computer.</li>
+            <li><strong>Month 1: Automated Follow-Ups</strong> — Set up 48-hour follow-up texts for every pending estimate.</li>
+          </ul>
+        </section>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-glass); margin: 3rem 0;" />
+
+        <div style="text-align: center; padding: 2rem 0;">
+          <h3 style="font-size: 1.75rem; margin-bottom: 0.75rem;">Ready to Hear It in Action?</h3>
+          <p style="max-width: 600px; margin: 0 auto 1.5rem; color: var(--text-secondary);">
+            Enter your business details on our home page. Our AI scans your site in seconds and rings your phone with a live demonstration customized for your trade.
+          </p>
+          <a href="/#live-demo-section" class="btn btn-primary btn-lg">
+            <i class="fa-solid fa-phone-volume"></i> Test Your AI Receptionist Live (Free)
+          </a>
+        </div>
+
+      </article>
+    </div>
+  </main>
+
+  <footer style="border-top: 1px solid var(--border-glass); padding: 3rem 0; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;">© 2026 EchoLift AI · 24/7 AI Receptionist & Business Automation for UK Businesses</p>
+      <p><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a> · <a href="/#apexvoice-pricing" style="color: var(--text-secondary); text-decoration: none;">Pricing</a> · <a href="/ai-guide.html" style="color: var(--text-secondary); text-decoration: none;">AI Playbook</a> · <a href="mailto:contact@echoliftai.co.uk" style="color: var(--text-secondary); text-decoration: none;">Contact</a></p>
+    </div>
+  </footer>
+
+  <script>
+    async function handleLeadSubmit(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('leadEmail');
+      const btn = document.getElementById('leadSubmitBtn');
+      const feedback = document.getElementById('leadFeedback');
+      const email = emailInput.value.trim();
+
+      if (!email) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        const res = await fetch('/api/report-lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            businessName: 'AI Guide Download',
+            industry: 'Small Business AI Playbook',
+            city: 'UK',
+            usp: 'Downloaded Free AI Booklet'
+          })
+        });
+
+        if (res.ok) {
+          feedback.style.display = 'block';
+          feedback.style.color = '#10b981';
+          feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> Thank you! Your playbook has been sent to ' + email + '.';
+          emailInput.value = '';
+        } else {
+          throw new Error('Failed to record');
+        }
+      } catch (err) {
+        feedback.style.display = 'block';
+        feedback.style.color = '#f59e0b';
+        feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> Success! You can also click "Save / Print PDF" above to download immediately.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Sent';
+      }
+    }
+  </script>
+</body>
+</html>

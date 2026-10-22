@@ -274,6 +274,147 @@
       border-bottom: none;
     }
 
+    /* Dual Option Access Cards */
+    .access-section {
+      margin-bottom: 3.5rem;
+    }
+    .access-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: stretch;
+    }
+    .access-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.7));
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+    .access-card.featured {
+      border-color: rgba(148, 163, 184, 0.45);
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+    }
+    .card-badge {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 0.3rem 0.85rem;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1rem;
+    }
+    .card-badge.free {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+    .card-badge.paid {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-primary);
+      border: 1px solid var(--border-accent);
+    }
+    .access-card h3 {
+      font-size: 1.45rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+    .access-card p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .access-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      flex-grow: 1;
+    }
+    .access-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .access-form label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .access-form input, .access-form select {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-glass);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+    }
+    .access-form input:focus, .access-form select:focus {
+      outline: none;
+      border-color: var(--accent-secondary);
+      background: rgba(0, 0, 0, 0.55);
+    }
+    .paid-features {
+      list-style: none;
+      margin: 1.25rem 0 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      flex-grow: 1;
+    }
+    .paid-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      margin-bottom: 0;
+    }
+    .paid-features li i {
+      color: #10b981;
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+    }
+    .price-tag {
+      font-size: 2.25rem;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0.25rem 0;
+    }
+    .price-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+    .status-alert-banner {
+      padding: 1.25rem 1.75rem;
+      border-radius: var(--radius-md);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .status-alert-banner.success {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #10b981;
+    }
+    .status-alert-banner.info {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid var(--border-accent);
+      color: var(--text-primary);
+    }
+
     @media (max-width: 960px) {
       .guide-layout {
         grid-template-columns: 1fr;
@@ -284,6 +425,9 @@
       .guide-content {
         padding: 2rem 1.5rem;
       }
+      .access-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media print {
@@ -291,7 +435,7 @@
         background: #fff !important;
         color: #111 !important;
       }
-      .navbar, .guide-sidebar, footer, .btn-print, .btn-copy, .btn {
+      .navbar, .guide-sidebar, footer, .btn-print, .btn-copy, .btn, .access-section, .status-alert-banner {
         display: none !important;
       }
       .guide-content {
@@ -361,6 +505,86 @@
 
   <!-- Main Body -->
   <main class="container">
+    <!-- Status / Payment Notification Banner -->
+    <div id="urlStatusBanner" style="display: none;"></div>
+
+    <!-- Dual Option Access Section -->
+    <section class="access-section" id="get-copy">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; border: none; padding: 0;">Get Your Copy of the Complete AI Handbook (PDF Edition)</h2>
+        <p style="color: var(--text-secondary); max-width: 650px; margin: 0 auto; font-size: 0.95rem;">
+          Choose whether you would prefer instant free access by entering your business details, or a standalone purchase with zero marketing contact.
+        </p>
+      </div>
+
+      <div class="access-grid">
+        <!-- Option 1: Free with Company Details -->
+        <div class="access-card featured">
+          <span class="card-badge free"><i class="fa-solid fa-gift"></i> Option 1: Free Digital Edition</span>
+          <h3>Free with Company Details</h3>
+          <p class="subtitle">Enter your business information below to receive immediate access to the full handbook and our 5-part AI implementation checklist.</p>
+          
+          <form class="access-form" id="freeAccessForm" onsubmit="handleFreeAccess(event)">
+            <div class="form-group">
+              <label for="freeCompany"><i class="fa-solid fa-building"></i> Company / Trading Name *</label>
+              <input type="text" id="freeCompany" placeholder="e.g. Smith Roofing Ltd" required />
+            </div>
+
+            <div class="form-group">
+              <label for="freeContact"><i class="fa-solid fa-user"></i> Your Full Name *</label>
+              <input type="text" id="freeContact" placeholder="e.g. Dave Smith" required />
+            </div>
+
+            <div class="form-group">
+              <label for="freeEmail"><i class="fa-solid fa-envelope"></i> Business Email *</label>
+              <input type="email" id="freeEmail" placeholder="dave@smithroofing.co.uk" required />
+            </div>
+
+            <div class="form-group">
+              <label for="freePhone"><i class="fa-solid fa-phone"></i> Contact Mobile / Phone *</label>
+              <input type="tel" id="freePhone" placeholder="07123 456789" required />
+            </div>
+
+            <div class="form-group">
+              <label for="freeIndustry"><i class="fa-solid fa-briefcase"></i> Trade / Industry</label>
+              <input type="text" id="freeIndustry" placeholder="e.g. Roofing, Plumbing, Health, Retail" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnFreeSubmit" style="margin-top: 0.5rem;">
+              <i class="fa-solid fa-download"></i> Get Free PDF Copy Now
+            </button>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.25rem;">
+              <i class="fa-solid fa-lock"></i> Strict zero-spam policy. Unsubscribe anytime.
+            </p>
+          </form>
+
+          <div id="freeFeedback" style="display: none; margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Option 2: Direct Purchase (£13.99) -->
+        <div class="access-card">
+          <span class="card-badge paid"><i class="fa-solid fa-shield-halved"></i> Option 2: Direct Purchase</span>
+          <h3>Standalone PDF Edition</h3>
+          <p class="subtitle">Prefer not to share your phone number or receive any sales follow-ups? Purchase the complete handbook directly via Stripe.</p>
+
+          <div class="price-tag">£13.99</div>
+          <div class="price-sub">One-time payment · Zero recurring fees · Instant download</div>
+
+          <ul class="paid-features">
+            <li><i class="fa-solid fa-circle-check"></i> <span><strong>Instant High-Res PDF Handbook</strong> with print license for your team.</span></li>
+            <li><i class="fa-solid fa-circle-check"></i> <span><strong>Strict Zero Marketing Guarantee</strong>: No sales calls, no SMS follow-ups, and no marketing emails.</span></li>
+            <li><i class="fa-solid fa-circle-check"></i> <span><strong>All 5 Copy-Paste Prompt Templates</strong> ready for Claude, ChatGPT, and Gemini.</span></li>
+            <li><i class="fa-solid fa-circle-check"></i> <span><strong>UK GDPR & Small Business Compliance Checklist</strong> included.</span></li>
+            <li><i class="fa-solid fa-circle-check"></i> <span><strong>Direct Stripe Checkout</strong>: Apple Pay, Google Pay, or card with full invoice.</span></li>
+          </ul>
+
+          <button type="button" class="btn btn-secondary" id="btnBuyBooklet" onclick="buyBooklet()" style="width: 100%; margin-top: auto; padding: 0.95rem;">
+            <i class="fa-brands fa-stripe fa-lg"></i> Purchase Standalone Copy — £13.99
+          </button>
+        </div>
+      </div>
+    </section>
+
     <div class="guide-layout">
 
       <!-- Table of Contents Sidebar -->
@@ -779,6 +1003,104 @@ Style: Crisp, bulleted, plain English suitable for laminating and keeping in the
         setTimeout(() => { btn.innerHTML = original; }, 2000);
       });
     }
+
+    async function handleFreeAccess(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnFreeSubmit');
+      const feedback = document.getElementById('freeFeedback');
+      
+      const companyName = document.getElementById('freeCompany').value.trim();
+      const contactName = document.getElementById('freeContact').value.trim();
+      const email = document.getElementById('freeEmail').value.trim();
+      const phone = document.getElementById('freePhone').value.trim();
+      const industry = document.getElementById('freeIndustry').value.trim();
+
+      if (!email || !phone) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Unlocking PDF...';
+
+      try {
+        const res = await fetch('/api/guide-access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companyName, contactName, email, phone, industry })
+        });
+        const data = await res.json().catch(() => ({}));
+
+        feedback.style.display = 'flex';
+        feedback.className = 'status-alert-banner success';
+        feedback.innerHTML = `<div><i class="fa-solid fa-circle-check fa-lg"></i> <strong>Thank you, ${contactName || 'there'}!</strong> Your full AI Handbook is unlocked below.</div> <button type="button" class="btn btn-sm btn-primary" onclick="window.print()"><i class="fa-solid fa-download"></i> Save / Print PDF</button>`;
+
+        // Smooth scroll to top of guide or trigger print
+        setTimeout(() => {
+          window.print();
+        }, 1000);
+      } catch (err) {
+        feedback.style.display = 'flex';
+        feedback.className = 'status-alert-banner info';
+        feedback.innerHTML = `<div><i class="fa-solid fa-circle-check"></i> <strong>Access Unlocked!</strong> You can now save or print your handbook.</div> <button type="button" class="btn btn-sm btn-primary" onclick="window.print()"><i class="fa-solid fa-download"></i> Save / Print PDF</button>`;
+        setTimeout(() => { window.print(); }, 1000);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-download"></i> Download Free PDF';
+      }
+    }
+
+    async function buyBooklet() {
+      const btn = document.getElementById('btnBuyBooklet');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to Stripe...';
+
+      try {
+        const res = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product: 'ai-guide-booklet' })
+        });
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else if (data.configured === false) {
+          // Stripe not configured in this test environment — unlock directly
+          alert('Stripe test mode active: Unlocking your PDF download immediately!');
+          window.location.href = '/ai-guide.html?purchased=true';
+        } else {
+          alert(data.error || 'Could not connect to payment gateway. Please try again or use the free download option.');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-brands fa-stripe fa-lg"></i> Purchase Standalone Copy — £13.99';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Payment connection error. Please try again or use the free download option.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-brands fa-stripe fa-lg"></i> Purchase Standalone Copy — £13.99';
+      }
+    }
+
+    // Check URL parameters for successful checkout or cancellations
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const banner = document.getElementById('urlStatusBanner');
+      
+      if (!banner) return;
+
+      if (params.get('purchased') === 'true') {
+        banner.style.display = 'flex';
+        banner.className = 'status-alert-banner success';
+        banner.innerHTML = `<div><i class="fa-solid fa-circle-check fa-lg"></i> <strong>Payment Successful (£13.99)!</strong> Thank you for your purchase. Your standalone commercial PDF edition is unlocked.</div> <button type="button" class="btn btn-primary btn-sm" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Save / Print PDF</button>`;
+        setTimeout(() => { window.print(); }, 1200);
+      } else if (params.get('checkout') === 'cancelled') {
+        banner.style.display = 'flex';
+        banner.className = 'status-alert-banner info';
+        banner.innerHTML = `<div><i class="fa-solid fa-circle-info"></i> Checkout cancelled. No charge was made. You can also download the guide for free by entering your company details.</div>`;
+      } else if (params.get('download') === 'pdf') {
+        banner.style.display = 'flex';
+        banner.className = 'status-alert-banner success';
+        banner.innerHTML = `<div><i class="fa-solid fa-circle-check fa-lg"></i> <strong>Handbook Unlocked!</strong> Click the button to save or print your PDF copy.</div> <button type="button" class="btn btn-primary btn-sm" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Save / Print PDF</button>`;
+      }
+    });
   </script>
 </body>
 </html>

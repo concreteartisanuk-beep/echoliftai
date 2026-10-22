@@ -135,6 +135,13 @@ const CATALOG: Record<string, CatalogItem> = {
     oneTime: 2500,
     mode: 'payment',
   },
+  'ai-guide-booklet': {
+    name: 'The Small Business Guide to AI (Complete PDF Edition)',
+    description:
+      'The complete 7-chapter commercial handbook: AI fundamentals, C-R-E-A-T-E prompt formulas, operational workflows, and UK GDPR data rules.',
+    oneTime: 1399, // £13.99
+    mode: 'payment',
+  },
 }
 
 const clean = (value: unknown, max = 120): string =>
@@ -194,16 +201,18 @@ export default async (req: Request, context: Context) => {
     }
 
     // Where the customer lands after paying.
-    const successPath =
-      body.product === 'premium-report'
-        ? '/premium-report?session_id={CHECKOUT_SESSION_ID}'
-        : `/thanks?checkout=success&plan=${encodeURIComponent(body.product!)}`
+    let successPath = `/thanks?checkout=success&plan=${encodeURIComponent(body.product!)}`
+    if (body.product === 'premium-report') {
+      successPath = '/premium-report?session_id={CHECKOUT_SESSION_ID}'
+    } else if (body.product === 'ai-guide-booklet') {
+      successPath = '/ai-guide.html?purchased=true&session_id={CHECKOUT_SESSION_ID}'
+    }
 
-    // ...and where they land if they back out. Abandoning checkout is the single
-    // most recoverable moment in the funnel, so this returns them to the order
-    // form with a flag the page uses to restore their brief and explain that
-    // nothing was charged — rather than dumping them at the top of the site.
-    const cancelPath = '/?checkout=cancelled#growth-report'
+    // ...and where they land if they back out.
+    let cancelPath = '/?checkout=cancelled#growth-report'
+    if (body.product === 'ai-guide-booklet') {
+      cancelPath = '/ai-guide.html?checkout=cancelled'
+    }
 
     // Stash the business details for the premium report so we can generate it
     // after payment without asking the customer to re-enter anything. The email

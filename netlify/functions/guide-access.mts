@@ -7,6 +7,8 @@ interface GuideAccessRequest {
   email?: string
   phone?: string
   industry?: string
+  nameOrBiz?: string
+  contact?: string
 }
 
 const clean = (val: unknown, max = 100): string =>
@@ -14,6 +16,11 @@ const clean = (val: unknown, max = 100): string =>
 
 const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+
+const looksLikePhone = (phone: string): boolean => {
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 9 && digits.length <= 15
+}
 
 export default async (req: Request) => {
   if (req.method !== 'POST') {
@@ -27,18 +34,36 @@ export default async (req: Request) => {
     return Response.json({ error: 'Invalid JSON request' }, { status: 400 })
   }
 
-  const company = clean(body.companyName, 120) || 'Independent Business'
-  const contact = clean(body.contactName, 80) || 'Business Owner'
-  const email = clean(body.email, 160).toLowerCase()
-  const phone = clean(body.phone, 40)
+  const nameOrBiz = clean(body.nameOrBiz || body.companyName || body.contactName, 120) || 'Business Owner'
+  const company = clean(body.companyName || body.nameOrBiz, 120) || nameOrBiz
+  const contact = clean(body.contactName || body.nameOrBiz, 80) || nameOrBiz
   const industry = clean(body.industry, 80) || 'Small Business'
 
-  if (!isValidEmail(email)) {
-    return Response.json({ error: 'Please enter a valid work email address.' }, { status: 400 })
+  let email = clean(body.email, 160).toLowerCase()
+  let phone = clean(body.phone, 40)
+
+  // Handle single contact field if passed
+  const singleContact = clean(body.contact, 160)
+  if (singleContact) {
+    if (isValidEmail(singleContact)) {
+      email = singleContact.toLowerCase()
+    } else if (looksLikePhone(singleContact)) {
+      phone = singleContact
+    } else {
+      // If it contains @, prioritize as email
+      if (singleContact.includes('@')) email = singleContact.toLowerCase()
+      else phone = singleContact
+    }
   }
 
-  if (!phone || phone.length < 8) {
-    return Response.json({ error: 'Please enter a valid business contact phone number.' }, { status: 400 })
+  const hasValidEmail = isValidEmail(email)
+  const hasValidPhone = looksLikePhone(phone)
+
+  if (!hasValidEmail && !hasValidPhone) {
+    return Response.json(
+      { error: 'Please enter a valid UK mobile number (for instant SMS link) or email address.' },
+      { status: 400 }
+    )
   }
 
   try {
@@ -61,7 +86,8 @@ export default async (req: Request) => {
 
     // 3. Notify business owner immediately via SMS so they can follow up
     try {
-      const ownerAlert = `🚨 AI Guide Download! ${contact} from ${company} (${phone}, ${email}). Trade: ${industry}. Follow up warm!`
+      const contactInfo = [phone, email].filter(Boolean).join(' · ')
+      const ownerAlert = `🚨 AI Guide Download! ${contact} (${contactInfo}). Trade: ${industry}. Follow up warm!`
       await sendSms('+447494867646', ownerAlert)
     } catch (smsErr) {
       console.error('Failed to dispatch owner alert for guide download:', smsErr)

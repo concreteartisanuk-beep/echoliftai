@@ -500,6 +500,19 @@
         <span><i class="fa-solid fa-shield-halved"></i> Plain English & Jargon-Free</span>
         <span><i class="fa-solid fa-book-bookmark"></i> Updated 2026 Edition</span>
       </div>
+
+      <!-- Quick Action Buttons for Frictionless Reading -->
+      <div style="margin-top: 2.5rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="#ch1" class="btn btn-primary btn-lg" style="box-shadow: 0 4px 20px rgba(148, 163, 184, 0.25);">
+          <i class="fa-solid fa-book-open-reader"></i> Read Full Handbook Online (100% Free) ↓
+        </a>
+        <a href="#get-copy" class="btn btn-secondary btn-lg">
+          <i class="fa-solid fa-file-pdf"></i> Download PDF Edition
+        </a>
+        <button type="button" class="btn btn-secondary btn-lg" onclick="window.print()">
+          <i class="fa-solid fa-print"></i> Print / Save PDF
+        </button>
+      </div>
     </div>
   </header>
 
@@ -513,48 +526,36 @@
       <div style="text-align: center; margin-bottom: 2rem;">
         <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem; border: none; padding: 0;">Get Your Copy of the Complete AI Handbook (PDF Edition)</h2>
         <p style="color: var(--text-secondary); max-width: 650px; margin: 0 auto; font-size: 0.95rem;">
-          Choose whether you would prefer instant free access by entering your business details, or a standalone purchase with zero marketing contact.
+          Choose whether you would prefer an instant free copy sent to your phone or email, or a standalone commercial purchase via Stripe.
         </p>
       </div>
 
       <div class="access-grid">
-        <!-- Option 1: Free with Company Details -->
+        <!-- Option 1: Free with Mobile / Email -->
         <div class="access-card featured">
-          <span class="card-badge free"><i class="fa-solid fa-gift"></i> Option 1: Free Digital Edition</span>
-          <h3>Free with Company Details</h3>
-          <p class="subtitle">Enter your business information below to receive immediate access to the full handbook and our 5-part AI implementation checklist.</p>
+          <span class="card-badge free"><i class="fa-solid fa-bolt"></i> Option 1: Instant Free PDF</span>
+          <h3>Send PDF to My Mobile or Inbox</h3>
+          <p class="subtitle">Enter your name and mobile number or email below to receive the printable PDF and our copy-paste prompt swipe file immediately.</p>
           
           <form class="access-form" id="freeAccessForm" onsubmit="handleFreeAccess(event)">
             <div class="form-group">
-              <label for="freeCompany"><i class="fa-solid fa-building"></i> Company / Trading Name *</label>
-              <input type="text" id="freeCompany" placeholder="e.g. Smith Roofing Ltd" required />
+              <label for="freeName"><i class="fa-solid fa-user"></i> Your Name or Business Name *</label>
+              <input type="text" id="freeName" placeholder="e.g. Dave / Smith Roofing Ltd" required />
             </div>
 
             <div class="form-group">
-              <label for="freeContact"><i class="fa-solid fa-user"></i> Your Full Name *</label>
-              <input type="text" id="freeContact" placeholder="e.g. Dave Smith" required />
+              <label for="freeContact"><i class="fa-solid fa-mobile-screen"></i> UK Mobile Number or Email *</label>
+              <input type="text" id="freeContact" placeholder="e.g. 07123 456789 or dave@example.com" required />
+              <small style="color: var(--text-muted); font-size: 0.78rem; margin-top: 0.2rem;">
+                Enter mobile for an instant SMS link or email for inbox delivery.
+              </small>
             </div>
 
-            <div class="form-group">
-              <label for="freeEmail"><i class="fa-solid fa-envelope"></i> Business Email *</label>
-              <input type="email" id="freeEmail" placeholder="dave@smithroofing.co.uk" required />
-            </div>
-
-            <div class="form-group">
-              <label for="freePhone"><i class="fa-solid fa-phone"></i> Contact Mobile / Phone *</label>
-              <input type="tel" id="freePhone" placeholder="07123 456789" required />
-            </div>
-
-            <div class="form-group">
-              <label for="freeIndustry"><i class="fa-solid fa-briefcase"></i> Trade / Industry</label>
-              <input type="text" id="freeIndustry" placeholder="e.g. Roofing, Plumbing, Health, Retail" />
-            </div>
-
-            <button type="submit" class="btn btn-primary" id="btnFreeSubmit" style="margin-top: 0.5rem;">
-              <i class="fa-solid fa-download"></i> Get Free PDF Copy Now
+            <button type="submit" class="btn btn-primary" id="btnFreeSubmit" style="margin-top: 0.75rem; padding: 0.95rem;">
+              <i class="fa-solid fa-paper-plane"></i> Send Free PDF Link Now
             </button>
-            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.25rem;">
-              <i class="fa-solid fa-lock"></i> Strict zero-spam policy. Unsubscribe anytime.
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.35rem;">
+              <i class="fa-solid fa-shield-halved"></i> Instant unlock · Zero spam · Unsubscribe anytime
             </p>
           </form>
 
@@ -972,14 +973,35 @@ Style: Crisp, bulleted, plain English suitable for laminating and keeping in the
 
         <hr style="border: 0; border-top: 1px solid var(--border-glass); margin: 3.5rem 0;" />
 
-        <div style="text-align: center; padding: 1.5rem 0;">
-          <h3 style="font-size: 1.6rem; margin-bottom: 0.75rem;">Put These Principles Into Practice</h3>
-          <p style="max-width: 650px; margin: 0 auto 1.5rem; color: var(--text-secondary); line-height: 1.6;">
-            If you want to see how conversational voice AI answers customer questions about your exact services in real time, test our live demonstration tool.
+        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); border: 1px solid var(--border-accent); border-radius: var(--radius-lg); padding: 3rem 2rem; text-align: center; margin: 2rem 0;">
+          <div style="display: inline-block; padding: 0.35rem 1rem; border-radius: var(--radius-pill); background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #10b981; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem;">
+            <i class="fa-solid fa-bolt"></i> Zero-Risk Business Pilot
+          </div>
+          <h3 style="font-size: 1.85rem; margin-bottom: 0.75rem; color: var(--text-primary);">Put Voice AI to Work on Your Actual Business Calls</h3>
+          <p style="max-width: 680px; margin: 0 auto 1.75rem; color: var(--text-secondary); line-height: 1.7; font-size: 1.05rem;">
+            Don't commit to a £99/mo subscription on blind faith. Let us build your custom AI voice receptionist and handle your unanswered calls for <strong>7 days for just £19 one-off</strong>.
           </p>
-          <a href="/#live-demo-section" class="btn btn-primary btn-lg">
-            <i class="fa-solid fa-phone-volume"></i> Test Live AI Voice Receptionist
-          </a>
+
+          <div style="max-width: 580px; margin: 0 auto 2rem; text-align: left; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1.25rem 1.5rem;">
+            <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; color: #10b981; font-weight: 600; font-size: 0.92rem;">
+              <i class="fa-solid fa-shield-halved"></i> 100% Missed Job Money-Back Guarantee
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+              If our AI does not catch at least 1 genuine customer inquiry that would have been lost to voicemail or a competitor during your 7-day trial, Ian will refund your £19 immediately with zero hassle.
+            </p>
+          </div>
+
+          <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary btn-lg" id="btnGuidePilot" onclick="buyPilot()">
+              <i class="fa-solid fa-bolt"></i> Start 7-Day Live Pilot — £19
+            </button>
+            <a href="/#live-demo-section" class="btn btn-secondary btn-lg">
+              <i class="fa-solid fa-phone-volume"></i> Test Interactive Voice Demo
+            </a>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+            <i class="fa-solid fa-check"></i> Apple Pay / Google Pay / Card · No recurring fee · £19 credited to month 1 if you keep it
+          </p>
         </div>
 
       </article>
@@ -1009,13 +1031,10 @@ Style: Crisp, bulleted, plain English suitable for laminating and keeping in the
       const btn = document.getElementById('btnFreeSubmit');
       const feedback = document.getElementById('freeFeedback');
       
-      const companyName = document.getElementById('freeCompany').value.trim();
-      const contactName = document.getElementById('freeContact').value.trim();
-      const email = document.getElementById('freeEmail').value.trim();
-      const phone = document.getElementById('freePhone').value.trim();
-      const industry = document.getElementById('freeIndustry').value.trim();
+      const nameOrBiz = document.getElementById('freeName').value.trim();
+      const contact = document.getElementById('freeContact').value.trim();
 
-      if (!email || !phone) return;
+      if (!nameOrBiz || !contact) return;
 
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Unlocking PDF...';
@@ -1024,13 +1043,13 @@ Style: Crisp, bulleted, plain English suitable for laminating and keeping in the
         const res = await fetch('/api/guide-access', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ companyName, contactName, email, phone, industry })
+          body: JSON.stringify({ nameOrBiz, contact })
         });
         const data = await res.json().catch(() => ({}));
 
         feedback.style.display = 'flex';
         feedback.className = 'status-alert-banner success';
-        feedback.innerHTML = `<div><i class="fa-solid fa-circle-check fa-lg"></i> <strong>Thank you, ${contactName || 'there'}!</strong> Your full AI Handbook is unlocked below.</div> <button type="button" class="btn btn-sm btn-primary" onclick="window.print()"><i class="fa-solid fa-download"></i> Save / Print PDF</button>`;
+        feedback.innerHTML = `<div><i class="fa-solid fa-circle-check fa-lg"></i> <strong>Thank you, ${nameOrBiz}!</strong> Your full AI Handbook is unlocked below.</div> <button type="button" class="btn btn-sm btn-primary" onclick="window.print()"><i class="fa-solid fa-download"></i> Save / Print PDF</button>`;
 
         // Smooth scroll to top of guide or trigger print
         setTimeout(() => {
@@ -1043,7 +1062,47 @@ Style: Crisp, bulleted, plain English suitable for laminating and keeping in the
         setTimeout(() => { window.print(); }, 1000);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-download"></i> Download Free PDF';
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Free PDF Link Now';
+      }
+    }
+
+    async function buyPilot() {
+      const btn = document.getElementById('btnGuidePilot');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to Stripe...';
+      }
+
+      try {
+        const res = await fetch('/api/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product: 'pilot-setup' })
+        });
+        const data = await res.json();
+
+        if (data.url) {
+          window.location.href = data.url;
+        } else if (data.configured === false) {
+          alert('Card checkout active. Reach Ian directly on 07494 867646 to activate your 7-day pilot immediately.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start 7-Day Live Pilot — £19';
+          }
+        } else {
+          alert(data.error || 'Could not connect to payment gateway. Please try again.');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start 7-Day Live Pilot — £19';
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Payment connection error. Please try again.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start 7-Day Live Pilot — £19';
+        }
       }
     }
 

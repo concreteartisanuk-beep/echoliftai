@@ -142,6 +142,13 @@ const CATALOG: Record<string, CatalogItem> = {
     oneTime: 1399, // £13.99
     mode: 'payment',
   },
+  'pilot-setup': {
+    name: '7-Day AI Receptionist Pilot & Done-For-You Setup',
+    description:
+      'Custom AI voice receptionist build, 7 days live call answering via call divert, SMS lead alerts to your mobile, 100% money-back guarantee.',
+    oneTime: 1900, // £19.00
+    mode: 'payment',
+  },
 }
 
 const clean = (value: unknown, max = 120): string =>
@@ -201,17 +208,21 @@ export default async (req: Request, context: Context) => {
     }
 
     // Where the customer lands after paying.
-    let successPath = `/thanks?checkout=success&plan=${encodeURIComponent(body.product!)}`
+    let successPath = `/thanks.html?checkout=success&plan=${encodeURIComponent(body.product!)}`
     if (body.product === 'premium-report') {
       successPath = '/premium-report?session_id={CHECKOUT_SESSION_ID}'
     } else if (body.product === 'ai-guide-booklet') {
       successPath = '/ai-guide.html?purchased=true&session_id={CHECKOUT_SESSION_ID}'
+    } else if (body.product === 'pilot-setup') {
+      successPath = '/thanks.html?checkout=success&plan=pilot-setup&session_id={CHECKOUT_SESSION_ID}'
     }
 
     // ...and where they land if they back out.
     let cancelPath = '/?checkout=cancelled#growth-report'
     if (body.product === 'ai-guide-booklet') {
       cancelPath = '/ai-guide.html?checkout=cancelled'
+    } else if (body.product === 'pilot-setup' || (body.product && body.product.startsWith('apexvoice'))) {
+      cancelPath = '/?checkout=cancelled#apexvoice-pricing'
     }
 
     // Stash the business details for the premium report so we can generate it

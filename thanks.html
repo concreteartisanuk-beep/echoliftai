@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful · Welcome to EchoLift AI</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9D0P6BP204"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9D0P6BP204');
+  </script>
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .thanks-hero {
+      padding: 7rem 0 4rem;
+      text-align: center;
+      position: relative;
+    }
+    .thanks-card {
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-lg);
+      padding: 3.5rem 2.5rem;
+      max-width: 760px;
+      margin: 0 auto 4rem;
+      box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7);
+      text-align: left;
+    }
+    .success-icon-wrap {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      color: #10b981;
+      margin: 0 auto 1.75rem;
+    }
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 2rem 0 2.5rem;
+      position: relative;
+    }
+    .timeline-step {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(148, 163, 184, 0.15);
+      border: 1px solid var(--border-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--accent-secondary);
+      flex-shrink: 0;
+      font-family: var(--font-heading);
+    }
+    .step-content h4 {
+      font-size: 1.05rem;
+      margin-bottom: 0.35rem;
+      color: var(--text-primary);
+    }
+    .step-content p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+    .direct-contact-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 600px) {
+      .thanks-card {
+        padding: 2rem 1.5rem;
+      }
+      .direct-contact-box {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar glass">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <i class="fa-solid fa-bolt-lightning text-gradient-primary"></i>
+        <span>EchoLift<span class="text-gradient-secondary"> AI</span></span>
+      </a>
+      
+      <div class="nav-actions">
+        <a href="/" class="btn btn-secondary btn-sm"><i class="fa-solid fa-house"></i> Return Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="thanks-hero">
+      <div class="success-icon-wrap">
+        <i class="fa-solid fa-check"></i>
+      </div>
+
+      <div id="statusBadge" style="display: inline-block; padding: 0.35rem 1rem; border-radius: var(--radius-pill); background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.25rem;">
+        Payment Confirmed
+      </div>
+
+      <h1 class="font-heading" id="thanksTitle" style="font-size: clamp(2rem, 4.5vw, 3rem); margin-bottom: 1rem;">
+        You're All Set!
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 1.15rem; max-width: 600px; margin: 0 auto 2.5rem;" id="thanksSubtitle">
+        Thank you for choosing EchoLift AI. Your order has been processed securely via Stripe.
+      </p>
+
+      <div class="thanks-card">
+        <div id="planSpecificContent">
+          <!-- Populated by JavaScript according to ?plan=... -->
+          <h3 style="font-size: 1.4rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+            7-Day AI Receptionist Pilot Activated
+          </h3>
+          <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            We are configuring your custom 24/7 AI call agent. Here is what happens next to get your calls covered:
+          </p>
+
+          <div class="timeline-steps">
+            <div class="timeline-step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <h4>Knowledge Base & Service Scrape</h4>
+                <p>Our team trains the AI on your exact services, standard pricing, service area, and FAQs so it sounds like an experienced member of your team.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <h4>Call Divert Setup Assistance (Within 2 Hours)</h4>
+                <p>Ian Henry (Founder) will reach out to you directly via SMS or phone to confirm your preferred call notification mobile number and provide your 2-digit phone divert instructions.</p>
+              </div>
+            </div>
+
+            <div class="timeline-step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <h4>7 Days of Live Missed Call Catching</h4>
+                <p>Whenever you are on a job, driving, or after hours, unanswered calls divert to your AI receptionist in 2 rings. Leads and appointment notes are sent directly to your phone.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout-box" style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; margin: 1.5rem 0;">
+            <h4 style="color: #10b981; font-size: 1rem; margin-bottom: 0.35rem;">
+              <i class="fa-solid fa-shield-halved"></i> 100% Missed Job Guarantee
+            </h4>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0;">
+              If ApexVoice does not catch at least 1 genuine customer inquiry during your 7 days that would have otherwise gone to voicemail or a competitor, let us know and we will refund your £19 immediately with zero hassle.
+            </p>
+          </div>
+
+          <div class="direct-contact-box">
+            <div>
+              <div style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                Need to Fast-Track or Send Custom Notes?
+              </div>
+              <div style="font-weight: 600; color: var(--text-primary); font-size: 1.05rem;">
+                Speak Directly with Ian Henry (Founder)
+              </div>
+              <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                Phone & WhatsApp: <strong>07494 867646</strong>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <a href="https://wa.me/447494867646?text=Hi%20Ian,%20I%20just%20signed%20up%20for%20the%207-Day%20AI%20Receptionist%20Pilot." class="btn btn-primary" target="_blank" rel="noopener">
+                <i class="fa-brands fa-whatsapp fa-lg"></i> Message on WhatsApp
+              </a>
+              <a href="tel:07494867646" class="btn btn-secondary">
+                <i class="fa-solid fa-phone"></i> Call 07494 867646
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-glass);">
+          <a href="/" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer style="border-top: 1px solid var(--border-glass); padding: 3rem 0; text-align: center; font-size: 0.9rem; color: var(--text-muted);">
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;">© 2026 EchoLift AI · Practical AI & Telephony for UK Businesses</p>
+      <p><a href="/" style="color: var(--text-secondary); text-decoration: none;">Home</a> · <a href="/ai-guide.html" style="color: var(--text-secondary); text-decoration: none;">AI Playbook</a> · <a href="mailto:contact@echoliftai.co.uk" style="color: var(--text-secondary); text-decoration: none;">Contact</a></p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const plan = params.get('plan') || 'pilot-setup';
+      const sessionId = params.get('session_id');
+
+      const titleEl = document.getElementById('thanksTitle');
+      const subEl = document.getElementById('thanksSubtitle');
+      const contentEl = document.getElementById('planSpecificContent');
+
+      if (plan === 'ai-guide-booklet') {
+        titleEl.textContent = 'Handbook Purchase Confirmed!';
+        subEl.textContent = 'Thank you for purchasing the complete commercial edition of The Small Business Guide to AI.';
+        contentEl.innerHTML = `
+          <h3 style="font-size: 1.4rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+            Your Commercial PDF Handbook is Ready
+          </h3>
+          <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            Click the button below to view, save, or print your full 7-chapter handbook with all copyable prompt templates and compliance checklists.
+          </p>
+          <div style="text-align: center; margin: 2rem 0;">
+            <a href="/ai-guide.html?purchased=true" class="btn btn-primary btn-lg">
+              <i class="fa-solid fa-file-pdf"></i> Access Full PDF Handbook Now
+            </a>
+          </div>
+        `;
+      } else if (plan && plan.startsWith('apexvoice')) {
+        titleEl.textContent = 'Welcome to ApexVoice!';
+        subEl.textContent = 'Your autonomous AI sales agent and 24/7 receptionist subscription is active.';
+      }
+    });
+  </script>
+</body>
+</html>

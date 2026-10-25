@@ -5,9 +5,9 @@ export default async () => {
   console.log('🚀 Running automated high-volume prospect outreach batch...')
 
   try {
-    // Dispatch 4 verified mobile SMS pitches per run (automated cold voice calls disabled for UK PECR compliance)
-    // Scheduled 2x daily = 8 SMS per day (~£0.35/day Twilio spend)
-    const result = await runOutreachBatch(4, 0)
+    // Dispatch 6 verified mobile SMS pitches per run (automated cold voice calls disabled for UK PECR compliance)
+    // Scheduled 4x daily Mon-Sat = 24 SMS per day (~£0.84/day Twilio spend)
+    const result = await runOutreachBatch(6, 0)
 
     console.log(`✅ Outreach batch finished: ${result.smsSent} SMS sent. ${result.freshRemaining} fresh verified mobiles remaining.`)
 
@@ -19,6 +19,6 @@ export default async () => {
 }
 
 export const config: Config = {
-  // 2 runs daily at 09:30 and 15:30 GMT (morning tea break & afternoon pack-up time)
-  schedule: '30 9,15 * * *',
+  // 4 runs daily Mon-Sat: 09:15 (morning break), 11:15 (lunch), 14:15 (afternoon), 16:15 (site pack-up)
+  schedule: '15 9,11,14,16 * * 1-6',
 }

@@ -1321,7 +1321,7 @@ h1, h2, h3, h4, .font-heading {
   background: rgba(14, 165, 233, 0.1);
   border: 1px solid rgba(14, 165, 233, 0.22);
   border-radius: var(--radius-pill);
-  color: var(--accent-tertiary);
+  color: #38bdf8;
   font-size: 0.85rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1330,8 +1330,12 @@ h1, h2, h3, h4, .font-heading {
 
 /* The launch badge's dot is green; this one belongs to the counter. */
 .visitor-pill .live-dot {
-  background-color: var(--accent-tertiary);
-  box-shadow: 0 0 10px var(--accent-tertiary);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 10px #38bdf8;
+  animation: pulse-dot 2s infinite;
 }
 
 /* Sitting inside the buy card rather than the hero */

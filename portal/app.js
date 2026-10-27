@@ -1188,29 +1188,11 @@ function setupEventListeners() {
     });
   }
 
-  // Immediate outreach batch trigger button
+  // Immediate outreach batch trigger button (currently paused)
   const triggerOutreachBtn = document.getElementById('trigger-outreach-btn');
   if (triggerOutreachBtn) {
     triggerOutreachBtn.addEventListener('click', async () => {
-      if (!confirm('Dispatch an immediate live outreach batch (6-8 SMS messages) to queued prospects?')) return;
-      triggerOutreachBtn.disabled = true;
-      triggerOutreachBtn.innerHTML = '<i data-lucide="loader"></i> Sending batch...';
-      try {
-        const res = await fetch('/api/trigger-outreach', { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          alert(`Outreach batch dispatched successfully!\n\n• Initial Pitches Sent: ${data.smsSent}\n• Follow-ups Sent: ${data.followupsSent}\n• AI Voice Calls Placed: ${data.callsSent || 0}\n• Fresh Mobiles Remaining: ${data.freshRemaining}\n• Fresh Landlines Remaining: ${data.freshLandlinesRemaining || 0}`);
-          await loadAllData();
-        } else {
-          alert(`Outreach response: ${JSON.stringify(data)}`);
-        }
-      } catch (err) {
-        alert(`Failed to trigger outreach: ${err.message}`);
-      } finally {
-        triggerOutreachBtn.disabled = false;
-        triggerOutreachBtn.innerHTML = '<i data-lucide="send"></i> Dispatch Outreach Batch (SMS)';
-        if (window.lucide) lucide.createIcons();
-      }
+      alert('ApexVoice SMS outreach is currently PAUSED by owner request to eliminate Twilio charges. Zero messages will be sent.');
     });
   }
 

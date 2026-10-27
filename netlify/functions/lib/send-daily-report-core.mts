@@ -65,7 +65,7 @@ Store & Pipeline Performance:
 • Unsent Fresh Prospects: ${freshProspects}
 • Backend Node Health: ${renderStatus}
 
-Status: 24/7 ACTIVE | echoliftai.co.uk`
+Status: Outreach PAUSED (Zero Outbound SMS) | echoliftai.co.uk`
 
   // 3. Send SMS via Twilio using Alphanumeric Sender ID 'EchoLift'
   let smsStatus = 'Not Sent'

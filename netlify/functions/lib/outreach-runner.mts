@@ -147,6 +147,12 @@ export interface OutreachRunResult {
 }
 
 /**
+ * KILL SWITCH: Hard pause on all outbound cold and follow-up outreach SMS.
+ * Paused on owner request to completely eliminate Twilio charges.
+ */
+export const OUTREACH_PAUSED = true
+
+/**
  * Executes a controlled, verified outreach batch to genuine UK trade businesses.
  * 1. Purges synthetic/fictional records to protect budget and compliance.
  * 2. Seeds verified authentic UK trade mobiles into the queue.
@@ -165,6 +171,12 @@ export async function runOutreachBatch(batchLimit = 4, landlineLimit = 0): Promi
     freshRemaining: 0,
     freshLandlinesRemaining: 0,
     details: []
+  }
+
+  if (OUTREACH_PAUSED) {
+    console.log('🛑 ApexVoice outreach is PAUSED by owner request. Zero SMS dispatched.')
+    result.details.push('Automated SMS outreach is PAUSED by owner request to eliminate Twilio charges.')
+    return result
   }
 
   const ownerPhoneDigits = '7494867646'

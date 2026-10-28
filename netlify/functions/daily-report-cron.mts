@@ -7,5 +7,6 @@ export default async () => {
 }
 
 export const config: Config = {
-  schedule: '0 18 * * *',
+  // Cron schedule disabled per owner request to stop daily update triggers
+  // schedule: '0 18 * * *',
 }

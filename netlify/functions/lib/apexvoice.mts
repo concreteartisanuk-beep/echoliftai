@@ -419,6 +419,12 @@ export async function sendSms(toRaw: string, body: string): Promise<SmsSendResul
     return { ok: false, error: `Could not parse "${toRaw}" as a sendable phone number.` }
   }
 
+  // Owner requested all notification/update SMS to their mobile be stopped
+  if (to.includes('7494867646')) {
+    console.log(`[sendSms] Blocked SMS to owner phone (${to}) per owner request: "${body.slice(0, 50)}..."`)
+    return { ok: true }
+  }
+
   try {
     const auth = Buffer.from(`${sid}:${token}`).toString('base64')
     const params = new URLSearchParams({ To: to, From: from, Body: body })

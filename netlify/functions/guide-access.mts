@@ -84,14 +84,9 @@ export default async (req: Request) => {
       `
     } catch {}
 
-    // 3. Notify business owner immediately via SMS so they can follow up
-    try {
-      const contactInfo = [phone, email].filter(Boolean).join(' · ')
-      const ownerAlert = `🚨 AI Guide Download! ${contact} (${contactInfo}). Trade: ${industry}. Follow up warm!`
-      await sendSms('+447494867646', ownerAlert)
-    } catch (smsErr) {
-      console.error('Failed to dispatch owner alert for guide download:', smsErr)
-    }
+    // 3. Log guide access without sending SMS to owner phone per request
+    const contactInfo = [phone, email].filter(Boolean).join(' · ')
+    console.log(`[guide-access] Free AI Guide download: ${contact} (${contactInfo}). Trade: ${industry}`)
 
     return Response.json({
       success: true,

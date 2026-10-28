@@ -67,52 +67,9 @@ Store & Pipeline Performance:
 
 Status: Outreach PAUSED (Zero Outbound SMS) | echoliftai.co.uk`
 
-  // 3. Send SMS via Twilio using Alphanumeric Sender ID 'EchoLift'
-  let smsStatus = 'Not Sent'
-  const getEnv = (key: string): string => {
-    if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key]!
-    try {
-      if (typeof Netlify !== 'undefined' && (Netlify as any).env) return (Netlify as any).env.get(key) || ''
-    } catch {}
-    return ''
-  }
-
-  const sid = getEnv('TWILIO_ACCOUNT_SID') || getEnv('TWILIO_SID')
-  const token = getEnv('TWILIO_AUTH_TOKEN')
-
-  if (sid && token) {
-    try {
-      const auth = Buffer.from(`${sid}:${token}`).toString('base64')
-      const params = new URLSearchParams({
-        To: ownerPhone,
-        From: 'EchoLift',
-        Body: reportText,
-      })
-
-      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
-      })
-
-      const resText = await res.text()
-      if (res.ok) {
-        smsStatus = 'Delivered via Twilio (Sender ID: EchoLift)'
-        console.log('✅ Daily Report SMS sent successfully!')
-      } else {
-        smsStatus = `Failed (${res.status}): ${resText.slice(0, 200)}`
-        console.error('❌ Daily Report SMS failed:', res.status, resText)
-      }
-    } catch (err: any) {
-      smsStatus = `Error: ${err.message}`
-      console.error('❌ Daily Report SMS error:', err)
-    }
-  } else {
-    smsStatus = 'Failed: Missing Twilio credentials'
-  }
+  // 3. SMS update to owner's phone permanently disabled per owner request (Zero SMS spend)
+  const smsStatus = 'Disabled per owner request (Zero SMS spend)'
+  console.log('ℹ️ Owner update SMS is disabled per request.')
 
   // 4. Send Email via Resend / sendEmail helper
   let emailStatus = 'Not Sent'

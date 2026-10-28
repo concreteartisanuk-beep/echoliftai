@@ -139,13 +139,8 @@ export default async (req: Request) => {
       }).catch((err) => console.warn('Inbound email error:', err))
     }
 
-    // Inform business owner on mobile that inquiry was received and auto-handled
-    try {
-      const ownerAlert = `🚨 Lead Reply Handled! ${prospect.business_name || from} (${from}) texted: "${body.slice(0, 70)}". ApexVoice auto-replied with £19 pilot link.`
-      await sendSms('+447494867646', ownerAlert)
-    } catch (alertErr) {
-      console.error('Failed to notify owner of lead reply via SMS:', alertErr)
-    }
+    // Owner requested no update SMS to their mobile. Log inquiry without dispatching Twilio SMS.
+    console.log(`[inbound-sms] Handled lead reply from ${prospect?.business_name || from} (${from}): "${body.slice(0, 70)}"`)
 
     // Return TwiML with the automated reply so Twilio sends it directly to the prospect's mobile
     const twiml = `<?xml version="1.0" encoding="UTF-8"?><Response><Message>${escapeXml(replyText)}</Message></Response>`

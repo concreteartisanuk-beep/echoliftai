@@ -310,10 +310,33 @@ export default async (req: Request) => {
     userSpeech = userSpeech.trim()
     console.log(`🎤 Twilio Speech Input for prospect ${prospectId}: "${userSpeech}"`)
 
-    let company = 'Your Business'
-    let contact = 'the team'
-    let facts = ''
-    let website = ''
+    let company = 'Concreet'
+    let contact = 'Ian'
+    let facts = JSON.stringify({
+      company: 'Concreet',
+      contact: 'Ian',
+      website: 'https://concreet.co.uk',
+      title: 'Concreet - Bespoke Microcement & Architectural Concrete',
+      metaDesc: 'Handcrafted concrete homeware, furniture, and seamless microcement kitchen worktops in the UK.',
+      productsAndServices: [
+        'microcement worktop resurfacing',
+        'kitchen island microcement',
+        'seamless bathroom wall microcement',
+        'bespoke concrete coffee tables',
+        'concrete dining tables',
+        'concrete candles and diffusers',
+        'fluted concrete bowls and trays',
+        'waterproof polyurethane sealing',
+        'free kitchen worktop estimates'
+      ],
+      paragraphs: [
+        'Concreet specialises in hand-trowelled microcement worktops applied directly over existing laminate, timber, or tile surfaces with zero demolition and a fast 3-day turnaround.',
+        'All microcement surfaces are sealed with 3 coats of heavy-duty matte or satin polyurethane, making them 100% waterproof and heat-resistant.',
+        'Ian has over 30 years of hands-on concrete, polishing, and surface finishing experience in the UK.'
+      ],
+      locations: ['North East England', 'Newcastle', 'Durham', 'Sunderland', 'Middlesbrough', 'Yorkshire', 'UK Wide Delivery']
+    })
+    let website = 'https://concreet.co.uk'
 
     if (prospectId) {
       try {
@@ -326,21 +349,6 @@ export default async (req: Request) => {
         }
       } catch (err) {
         console.error('Error loading prospect for speech reply:', err)
-      }
-    } else {
-      // If prospectId is omitted, load the most recent prospect who just requested a live demo
-      try {
-        const rows = (await db().sql`
-          SELECT * FROM apexvoice_prospects ORDER BY id DESC LIMIT 1
-        `) as ProspectRow[]
-        if (rows[0]) {
-          company = rows[0].business_name || company
-          contact = rows[0].contact_person || contact
-          facts = rows[0].pain_points || facts
-          website = rows[0].website || website
-        }
-      } catch (err) {
-        console.error('Error loading latest prospect for speech reply:', err)
       }
     }
 

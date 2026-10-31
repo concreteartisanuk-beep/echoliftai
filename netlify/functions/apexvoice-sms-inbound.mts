@@ -98,14 +98,12 @@ export default async (req: Request) => {
     const cleanBody = body.toLowerCase().trim()
 
     let replyText = ''
-    if (/(how much|cost|price|quote|rate|expensive|fee|pricing|pilot|cheap|deal|£)/i.test(cleanBody)) {
-      replyText = `Hi ${contact}, Ian here. It's £19 for a full 7-day pilot with zero contract (100% money back if you don't like it). After that it's £99/mo if you keep it. Hear the voice demo and grab the pilot here: https://www.echoliftai.co.uk/#pilot-offer`
-    } else if (/(how does it work|how it works|what is this|explain|details|info|sample|listen|hear|demo|test)/i.test(cleanBody)) {
-      replyText = `Hi ${contact}, Ian here. It's a 24/7 AI call receptionist trained on your business that answers when you're busy or driving, quotes prices, and texts you lead details. Listen to the 30s demo here: https://www.echoliftai.co.uk/#live-demo-section or start a £19 pilot: https://www.echoliftai.co.uk/#pilot-offer`
-    } else if (/(who is this|who are you|how did you get|scam|legit|where did you find|who's this)/i.test(cleanBody)) {
-      replyText = `Hi ${contact}, Ian here. I'm a UK tradesman (concrete mixer driver) and built EchoLift to help trade contractors stop losing jobs to voicemail. Found your business on the local trade directory. You can test our live voice demo and check us out at https://www.echoliftai.co.uk (or reply STOP to opt out)`
+    if (/(pet|portrait|dog|cat|frame|framed|drawing|photo|picture|gift|royal|spoof)/i.test(cleanBody)) {
+      replyText = `Hi ${contact}, Ian here. Thanks for reaching out! For custom framed humorous pet & family portraits, you can upload your photo and order at https://youvebeenframed.netlify.app (or text your photo straight to this number for a free 60s preview!)`
+    } else if (/(worktop|microcement|kitchen|island|resurfacing|bathroom|trowel|concrete|table|furniture|bowl|candle|quote|price|cost|estimate)/i.test(cleanBody)) {
+      replyText = `Hi ${contact}, Ian here from Concreet. We specialise in seamless microcement worktop resurfacing and bespoke concrete furniture across the UK. Check our instant project estimator at https://concreet.co.uk/microcement-worktops or let me know what sizes you need!`
     } else {
-      replyText = `Hi ${contact}, Ian here from EchoLift. Glad you got in touch! You can test our live call demo or activate the 7-day risk-free pilot (£19, 100% money-back guarantee) here: https://www.echoliftai.co.uk/#pilot-offer . Takes 10 mins to set up so you don't miss another job!`
+      replyText = `Hi ${contact}, Ian here. Thanks for getting in touch! Whether you're looking for microcement worktops/furniture (https://concreet.co.uk) or custom humorous framed pet portraits (https://youvebeenframed.netlify.app), let me know how I can help you today!`
     }
 
     // Record agent auto-reply in DB

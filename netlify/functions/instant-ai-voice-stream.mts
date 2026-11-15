@@ -14,7 +14,8 @@ export default async (req: Request) => {
   try {
     const campaign = await readCampaign()
     const apiKey = resolveElevenLabsKey(campaign)
-    const voiceId = campaign?.elevenlabs_agent_voice || 'Xb7hH2yqWyRel9GQ555e'
+    const envVoice = typeof process !== 'undefined' ? (process.env.ELEVENLABS_AGENT_VOICE || process.env.ELEVENLABS_VOICE_ID) : ''
+    const voiceId = url.searchParams.get('voiceId') || envVoice || campaign?.elevenlabs_agent_voice || 'Xb7hH2yqWyRel9GQ555e'
     const cacheKey = `${voiceId}:${textParam}`
 
     // 1. Check in-memory RAM cache (< 1ms response)

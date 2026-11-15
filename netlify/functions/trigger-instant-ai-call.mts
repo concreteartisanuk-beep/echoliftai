@@ -257,15 +257,18 @@ export default async (req: Request) => {
       const twilioFromNumber = process.env.TWILIO_FROM_NUMBER || '+441914062323'
 
       if (twilioAccountSid && twilioAuthToken) {
-        try {
+          const followupAudioUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent("Are you still there love? How can I help you today?")}`
+          const goodbyeAudioUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent("No trouble at all love. If you need any advice or want to book an order later, give us a call back on 0191 406 2323. Have a grand day!")}`
           const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="services, quote, pricing, cost, location, contact, phone, appointments, bookings, hours">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4" hints="concrete, mix, cubes, metres, delivery, price, quote, C20, C25, C30, gen 1, gen 3, screed, pump, chute, barrow">
     <Play>${audioStreamUrl}</Play>
   </Gather>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
-    <Say voice="alice" language="en-GB">Are you still there? How can I help you today?</Say>
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4">
+    <Play>${followupAudioUrl}</Play>
   </Gather>
+  <Play>${goodbyeAudioUrl}</Play>
+  <Hangup/>
 </Response>`
 
           const authHeader = 'Basic ' + Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString('base64')

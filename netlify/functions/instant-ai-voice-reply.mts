@@ -357,31 +357,40 @@ export default async (req: Request) => {
 
     let aiReply: string | null = null
 
-    // 1. Try Claude 3.5 Haiku if API key is present
-    if (userSpeech) {
+    // 0. Handle Silence / Empty Speech explicitly
+    if (!userSpeech || userSpeech.trim().length === 0) {
+      aiReply = "Are you still there love? How can I help you with your concrete mix, quantity or delivery quote today?"
+    } else {
+      // 1. Try Claude 3.5 Haiku if API key is present
       aiReply = await generateAiAnswer(userSpeech, factsheet)
-    }
 
-    // 2. Grounded Universal Knowledge Engine (runs if AI took >1100ms or is offline)
-    if (!aiReply) {
-      aiReply = answerGrounded(userSpeech, factsheet)
+      // 2. Grounded Universal Knowledge Engine (runs if AI took >1100ms or is offline)
+      if (!aiReply) {
+        aiReply = answerGrounded(userSpeech, factsheet)
+      }
     }
 
     const audioUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(aiReply)}`
+    const followupText = "Are you still there love? I'm here to help with your concrete mix, quantity or delivery quote whenever you're ready."
+    const followupAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(followupText)}`
+    const goodbyeText = "No trouble at all love. If you need any concrete advice or want to book an order later, give us a ring back on 0191 406 2323 or visit mixershare.co.uk. Have a grand day!"
+    const goodbyeAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(goodbyeText)}`
     const pIdStr = prospectId ? String(prospectId) : ''
 
     // Pre-warm the synthesized audio in background so Twilio receives it instantly
     fetch(audioUrl).catch((e) => console.warn('Prewarm reply audio warning:', e))
 
-    // Nest <Play> inside <Gather> for instant speech recognition & zero transition latency
+    // Strict 4-second maximum limit for silence during speech and pauses
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4" hints="services, quote, pricing, cost, location, contact, phone, appointments, bookings, hours">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4" hints="concrete, mix, cubes, metres, delivery, price, quote, C20, C25, C30, gen 1, gen 3, screed, pump, chute, barrow">
     <Play>${audioUrl}</Play>
   </Gather>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="auto" timeout="4">
-    <Say voice="alice" language="en-GB">Are you still there? How can I help you today?</Say>
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4">
+    <Play>${followupAudio}</Play>
   </Gather>
+  <Play>${goodbyeAudio}</Play>
+  <Hangup/>
 </Response>`
 
     return new Response(twiml, {
@@ -391,13 +400,14 @@ export default async (req: Request) => {
     })
   } catch (err: any) {
     console.error('Unhandled instant-ai-voice-reply exception:', err)
-    const fallbackText = 'Thank you for calling. Please let us know how we can help and we will get back to you shortly.'
+    const fallbackText = 'Thank you for calling our concrete order desk. If you need a quote or want to book, please give us a ring on 0191 406 2323. Have a grand day!'
     const fallbackAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(fallbackText)}`
     const fallbackTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" speechTimeout="auto" timeout="4">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply" speechTimeout="3" timeout="4">
     <Play>${fallbackAudio}</Play>
   </Gather>
+  <Hangup/>
 </Response>`
     return new Response(fallbackTwiml, {
       headers: {

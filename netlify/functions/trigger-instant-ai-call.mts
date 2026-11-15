@@ -226,7 +226,7 @@ export default async (req: Request) => {
           firstMessage: spokenText,
           voice: {
             provider: '11labs',
-            voiceId: 'Xb7hH2yqWyRel9GQ555e',
+            voiceId: process.env.ELEVENLABS_AGENT_VOICE || 'b6T2IrWoTx7ZIb3BHJSg',
             stability: 0.5,
             similarityBoost: 0.75,
           },

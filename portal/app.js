@@ -536,7 +536,7 @@ function populateCampaignForms() {
   const clearBox = document.getElementById('elevenlabs-clear');
   if (clearBox) clearBox.checked = false;
 
-  applyVoiceSelection('elevenlabs-agent-voice', c.elevenLabsAgentVoice || 'Xb7hH2yqWyRel9GQ555e');
+  applyVoiceSelection('elevenlabs-agent-voice', c.elevenLabsAgentVoice || 'b6T2IrWoTx7ZIb3BHJSg');
   applyVoiceSelection('elevenlabs-customer-voice', c.elevenLabsCustomerVoice || 'JBF2rCBphFnJZjxrOi8j');
 }
 
@@ -600,7 +600,7 @@ const CAMPAIGN_PRESETS = {
     },
   },
   agency: {
-    agentVoice: 'Xb7hH2yqWyRel9GQ555e', // Alice (UK Female)
+    agentVoice: 'b6T2IrWoTx7ZIb3BHJSg', // North East UK Lady
     customerVoice: 'JBF2rCBphFnJZjxrOi8j', // George (UK Male)
     fields: {
       'campaign-company-name': 'ApexVoice Agency',
@@ -1394,7 +1394,7 @@ function setupEventListeners() {
       document.getElementById('campaign-pricing').value = '£249/month';
     }
 
-    applyVoiceSelection('elevenlabs-agent-voice', 'Xb7hH2yqWyRel9GQ555e');
+    applyVoiceSelection('elevenlabs-agent-voice', 'b6T2IrWoTx7ZIb3BHJSg');
     applyVoiceSelection('elevenlabs-customer-voice', 'JBF2rCBphFnJZjxrOi8j');
   });
 

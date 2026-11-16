@@ -1,291 +1,221 @@
 import type { Config } from '@netlify/functions'
 import { db, findProspect, type ProspectRow } from './lib/apexvoice.mts'
 
-interface BusinessFactsheet {
-  company: string
-  contact: string
-  website: string
-  title: string
-  metaDesc: string
-  productsAndServices: string[]
-  paragraphs: string[]
-  locations: string[]
+const VOICE_ID = 'b6T2IrWoTx7ZIb3BHJSg' // North East UK female voice
+const VOICE_STREAM_BASE = 'https://www.echoliftai.co.uk/api/instant-ai-voice-stream'
+
+const makeAudioUrl = (text: string) => {
+  return `${VOICE_STREAM_BASE}?voiceId=${VOICE_ID}&text=${encodeURIComponent(text)}`
 }
 
-/** Parse stored prospect data into a structured factsheet */
-const parseFactsheet = (company: string, contact: string, website: string, rawText: string): BusinessFactsheet => {
-  if (rawText && rawText.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(rawText) as Partial<BusinessFactsheet>
-      return {
-        company: parsed.company || company,
-        contact: parsed.contact || contact,
-        website: parsed.website || website,
-        title: parsed.title || company,
-        metaDesc: parsed.metaDesc || '',
-        productsAndServices: Array.isArray(parsed.productsAndServices) ? parsed.productsAndServices : [],
-        paragraphs: Array.isArray(parsed.paragraphs) ? parsed.paragraphs : [],
-        locations: Array.isArray(parsed.locations) ? parsed.locations : [],
-      }
-    } catch (e) {
-      // JSON parse fallback
-    }
-  }
-
-  // Fallback if stored as plain text
-  const services: string[] = []
-  const locations: string[] = []
-  const paragraphs: string[] = []
-
-  const lines = (rawText || '').split('\n')
-  for (const line of lines) {
-    if (line.includes('Services:')) {
-      const parts = line.replace(/.*Services:/, '').split(/[;,]/)
-      for (const p of parts) if (p.trim().length > 3) services.push(p.trim())
-    } else if (line.includes('Areas:') || line.includes('Locations:')) {
-      const locs = line.replace(/.*(?:Areas|Locations):/, '').split(',')
-      for (const l of locs) if (l.trim().length > 2) locations.push(l.trim())
-    } else if (line.length > 25) {
-      paragraphs.push(line.trim())
-    }
-  }
-
-  return {
-    company,
-    contact,
-    website,
-    title: company,
-    metaDesc: paragraphs[0] || `Professional services for ${company}`,
-    productsAndServices: services,
-    paragraphs,
-    locations,
-  }
-}
-
-/** Attempt ultra-fast LLM generation via Anthropic Claude (if API key available) */
-const generateAiAnswer = async (
-  speech: string,
-  factsheet: BusinessFactsheet
-): Promise<string | null> => {
-  try {
-    const apiKey =
-      process.env.ANTHROPIC_API_KEY ||
-      (typeof Netlify !== 'undefined' ? (Netlify as any).env?.get('ANTHROPIC_API_KEY') : '')
-    if (!apiKey) return null
-
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), 1100)
-
-    const prompt = `You are Echo, the professional, friendly 24/7 AI telephone receptionist answering calls for "${factsheet.company}".
-Owner / Contact Person: "${factsheet.contact}".
-
-ACTUAL WEBSITE FACTSHEET FOR ${factsheet.company}:
-Website: ${factsheet.website}
-Title: ${factsheet.title}
-Overview: ${factsheet.metaDesc}
-Products & Services: ${factsheet.productsAndServices.join('; ')}
-Locations: ${factsheet.locations.join(', ')}
-Key Details: ${factsheet.paragraphs.join(' ')}
-
-CALLER'S QUESTION ON THE PHONE:
-"${speech}"
-
-STRICT RULES:
-1. Speak in 1-2 concise, conversational spoken sentences suitable for a phone call.
-2. Only speak about what ${factsheet.company} actually does based strictly on the factsheet above. NEVER invent services or trades not mentioned.
-3. If asked about something they do not offer, politely state what they specialize in and offer a callback with ${factsheet.contact}.
-4. Speak naturally like a real UK receptionist. Do NOT use markdown, bullet points, or say you are an AI.`
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 100,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    clearTimeout(timer)
-
-    if (res.ok) {
-      const data = await res.json()
-      const textBlock = data.content?.find((c: any) => c.type === 'text')
-      if (textBlock?.text) {
-        return textBlock.text.trim()
-      }
-    }
-  } catch (err) {
-    // Timeout or network error
-  }
-  return null
-}
-
-/** 100% Grounded Universal Answering Engine */
-const answerGrounded = (query: string, factsheet: BusinessFactsheet): string => {
-  const lower = query.toLowerCase().trim()
-  const company = factsheet.company
-  const contact = factsheet.contact
-  const contactFirst = contact ? contact.split(' ')[0].toLowerCase() : ''
-  const navPattern = /\b(?:home|about|contact|sign in|cookie|privacy|basket|cart|shop|checkout|menu|search|account|login)\b/i
-  const services = (factsheet.productsAndServices || []).filter((s) => !navPattern.test(s) && !/[🛒🛍️📦]/u.test(s))
-  const servicesSummary = services.length
-    ? services.slice(0, 4).join(', ')
-    : factsheet.metaDesc || 'our bespoke products and services'
+/**
+ * Intelligent domain expert engine for Ready-Mix Concrete Order Desk
+ * Answers mix queries, volume calculations, pricing, delivery, discharge & booking
+ */
+export const answerConcreteOrderQuery = (speech: string): string => {
+  const lower = speech.toLowerCase().trim()
 
   // 1. GREETINGS
   if (
     lower === 'hello' ||
     lower === 'hi' ||
     lower === 'hey' ||
-    lower === 'hello echo' ||
     lower === 'good morning' ||
-    lower === 'good afternoon'
+    lower === 'good afternoon' ||
+    lower.includes('is this the concrete') ||
+    lower.includes('is this concrete')
   ) {
-    return `Hello! I am Echo, the 24/7 AI Receptionist for ${company}. How can I assist you with your project today?`
+    return "Hello love! Thanks for calling the concrete order desk. How can I help you with your concrete mix, quantity or delivery today?"
   }
 
-  // 2. APEXVOICE / ECHOLIFT PLATFORM META
+  // 2. VOLUME / MEASUREMENT CALCULATION IN SPEECH
+  // Look for patterns like "6 by 4 by 100", "5 metres by 3 metres by 150mm", "4m x 3m x 0.1m"
+  const dimMatch = lower.match(/(\d+(?:\.\d+)?)\s*(?:m|metres?|meters?)?\s*(?:by|x|\*)\s*(\d+(?:\.\d+)?)\s*(?:m|metres?|meters?)?(?:\s*(?:by|x|\*)\s*(\d+(?:\.\d+)?)\s*(?:m|metres?|mm|milli?metres?|cm)?)?/)
+  if (dimMatch && (lower.includes('cube') || lower.includes('volume') || lower.includes('measure') || lower.includes('need') || lower.includes('area') || lower.includes('deep') || lower.includes('thick'))) {
+    const l = parseFloat(dimMatch[1])
+    const w = parseFloat(dimMatch[2])
+    let d = dimMatch[3] ? parseFloat(dimMatch[3]) : 0.1 // default 100mm (0.1m) if omitted
+    if (d >= 20) d = d / 1000 // Convert mm to metres (e.g. 100mm -> 0.1m)
+    else if (d >= 5 && d < 20) d = d / 100 // Convert cm to metres
+
+    if (l > 0 && w > 0 && d > 0 && l < 100 && w < 100) {
+      const rawCubes = l * w * d
+      const recommendedCubes = (rawCubes * 1.1).toFixed(1)
+      const exactCubes = rawCubes.toFixed(1)
+      return `For ${l} by ${w} at roughly ${Math.round(d * 1000)} millimetres deep, that comes out at about ${exactCubes} cubic metres. With ten percent extra for trench dips and ground variation, you'll want ${recommendedCubes} cubes love. What mix are you after?`
+    }
+  }
+
+  // General volume calculation advice
   if (
-    lower.includes('apexvoice') ||
-    lower.includes('apex voice') ||
-    lower.includes('echolift') ||
-    lower.includes('who built you') ||
-    lower.includes('what are you')
+    lower.includes('calculate') ||
+    lower.includes('how do i work out') ||
+    lower.includes('how many cubes') ||
+    lower.includes('how many metres') ||
+    lower.includes('measure')
   ) {
-    return `ApexVoice is our 24/7 AI voice receptionist platform. It answers calls instantly, answers inquiries for ${company}, and books jobs straight into your schedule so you never lose leads.`
+    return "To calculate your cubes love, just multiply your length by width by depth in metres, and add ten percent for trench dips. If you tell me your measurements now, I can work it out for you straight away!"
   }
 
-  // 3. PRICING & QUOTES (Using strict whole word matching to avoid substring bugs like 'coffee' matching 'fee'!)
+  // 3. PRICING & QUOTES (Checked before mix explanations so "how much is C25" quotes price)
+  const isPricingQuery = lower.includes('price') || lower.includes('cost') || lower.includes('how much') || lower.includes('rate') || lower.includes('quote') || lower.includes('estimate')
+  
+  // Specific volume with price (e.g. "how much for 6 cubes of C25")
+  const cubeMatch = lower.match(/(\d+(?:\.\d+)?)\s*(?:cubes?|metres?|meters?|m3)/)
+  if (cubeMatch && isPricingQuery) {
+    const qty = parseFloat(cubeMatch[1])
+    const estMin = Math.round(qty * 115)
+    const estMax = Math.round(qty * 130)
+    let mixMention = ''
+    if (lower.includes('c30') || lower.includes('rc30')) mixMention = ' of C30'
+    else if (lower.includes('c25') || lower.includes('rc25')) mixMention = ' of C25'
+    else if (lower.includes('c20') || lower.includes('gen 3')) mixMention = ' of C20'
+    return `For ${qty} cubes${mixMention}, you're looking around £${estMin} to £${estMax} plus VAT delivered on an eight-wheeler truck. Whereabouts is the delivery going love?`
+  }
+
+  if (isPricingQuery) {
+    return "Ready-mix concrete is typically around £115 to £130 a cube depending on your mix grade and delivery location, delivered on an eight-wheeler mixer. What mix and delivery postcode are you looking for love?"
+  }
+
+  // Part load / minimum load fees
+  if (lower.includes('part load') || lower.includes('minimum load') || lower.includes('small load')) {
+    return "Our standard eight-wheelers carry up to 8 cubic metres, and there is just a small part-load charge for orders under 4 cubes. How many cubic metres are you needing love?"
+  }
+
+  // 4. MIX RECOMMENDATIONS BY APPLICATION
+  // Driveways
+  if (lower.includes('drive') || lower.includes('driveway') || lower.includes('car')) {
+    return "For a domestic driveway you'll want RC30 or C30 love, nice and hard-wearing to take vehicle weights and frost. How many cubic metres are you needing?"
+  }
+
+  // Garage Floor / Slab
+  if (lower.includes('garage') || lower.includes('workshop')) {
+    return "For a garage floor slab, C25 or C30 is spot on love, usually laid 100 to 150 mil thick with a tamp or trowel finish. How many cubes were you looking for?"
+  }
+
+  // Foundations / Footings / Trenches
   if (
-    /\b(?:quote|quotes|cost|costs|pricing|price|prices|estimate|estimates|fee|fees|rates)\b/i.test(lower) ||
-    lower.includes('how much')
+    lower.includes('footing') ||
+    lower.includes('foundation') ||
+    lower.includes('trench') ||
+    lower.includes('underpin') ||
+    lower.includes('extension')
   ) {
-    return `We provide tailored quotes for all our work at ${company}. Would you like me to book a quick callback with ${contact} to discuss pricing and specifications?`
+    return "For standard domestic footings and strip foundations, Gen 3 or C20 is standard, or C25 if you've got heavier ground. Have you got your trench measurements handy?"
   }
 
-  // 4. LOCATION & WHERE BASED
+  // Patio / Paving / Paths / Garden
   if (
-    lower.includes('where are you') ||
-    lower.includes('where based') ||
-    lower.includes('where are you based') ||
-    lower.includes('location') ||
-    lower.includes('deliver') ||
-    lower.includes('travel') ||
-    lower.includes('what area') ||
-    lower.includes('do you cover')
+    lower.includes('patio') ||
+    lower.includes('paving') ||
+    lower.includes('path') ||
+    lower.includes('garden') ||
+    lower.includes('slab')
   ) {
-    const locStr = factsheet.locations && factsheet.locations.length
-      ? factsheet.locations.join(' and ')
-      : 'the local area and across the UK'
-    return `${company} is based in ${locStr}. Where is your property or project located?`
+    return "For a garden patio base or pathway, C20 or Gen 3 at 100 mil thick is ideal love. What are your length and width measurements?"
   }
 
-  // 5. AVAILABILITY & SCHEDULING
+  // Shed Base
+  if (lower.includes('shed') || lower.includes('summer house') || lower.includes('greenhouse')) {
+    return "A shed base is grand with C20 or Gen 3 concrete, normally poured 100 millimetres thick on hardcore. How long and wide is the base love?"
+  }
+
+  // Floor Screed / Underfloor Heating
+  if (lower.includes('screed') || lower.includes('underfloor')) {
+    return "We supply standard 4-to-1 semi-dry floor screed, and fibre screed for underfloor heating. How many square metres is the floor love?"
+  }
+
+  // Agricultural / Heavy Commercial / Farm
+  if (lower.includes('farm') || lower.includes('agricultural') || lower.includes('silage') || lower.includes('commercial yard')) {
+    return "For agricultural yards or heavy plant access, you'll need RC35 or C40 concrete for high abrasion resistance. What size area are you pouring love?"
+  }
+
+  // Slump / Workability
+  if (lower.includes('slump') || lower.includes('workability') || lower.includes('wet') || lower.includes('dry')) {
+    return "We supply standard S3 slump which is perfect for barrowing and raking, or we can add plasticiser if you need it flowing easily into foundations. How are you placing it love?"
+  }
+
+  // Curing / Setting time
+  if (lower.includes('cure') || lower.includes('curing') || lower.includes('dry') || lower.includes('setting time') || lower.includes('walk on')) {
+    return "Ready-mix takes its initial set in about two to three hours. You can walk on it carefully after 24 to 48 hours, and it reaches full design strength after 28 days."
+  }
+
+  // Explaining specific mix grades (C20, C25, C30, Gen 1, Gen 3)
+  if (lower.includes('c20') || lower.includes('gen 3') || lower.includes('gen3')) {
+    return "C20, or Gen 3, is a 20-Newton mix ideal for domestic foundations, patio slabs, and unreinforced floors. How many cubic metres do you need love?"
+  }
+  if (lower.includes('c25') || lower.includes('rc25')) {
+    return "C25 is our most popular 25-Newton versatile mix for house extensions, footings, and garage floors. How many cubes are you looking to order?"
+  }
+  if (lower.includes('c30') || lower.includes('rc30')) {
+    return "C30 is a high-strength 30-Newton mix designed for external paving, driveways, and reinforced slabs. Whereabouts is your delivery going?"
+  }
+  if (lower.includes('what mix') || lower.includes('which mix') || lower.includes('mix do i need')) {
+    return "It depends on the job love! For driveways we recommend C30, for garage floors C25, and for foundations or patios C20 or Gen 3. What are you pouring?"
+  }
+
+  // 5. BOOKING AN ORDER & COLLECTING DETAILS
   if (
-    lower.includes('when can you start') ||
-    lower.includes('availability') ||
-    lower.includes('available') ||
-    lower.includes('book an appointment') ||
-    lower.includes('how soon') ||
-    lower.includes('book a survey') ||
-    lower.includes('can someone come out') ||
-    lower.includes('tomorrow') ||
-    lower.includes('this week')
+    lower.includes('book') ||
+    lower.includes('order') ||
+    lower.includes('place an order') ||
+    lower.includes('put me down') ||
+    lower.includes('arrange')
   ) {
-    return `We can check our diary and get an appointment or consultation scheduled for you at ${company}. Would you like me to have ${contact} call you back to confirm a date?`
+    return "Grand! To get that booked in, I just need your delivery address or postcode, the date you want it, whether you want morning or afternoon slot, and your contact name."
   }
 
-  // 6. SPEAK TO OWNER / HUMAN
+  // Detecting if caller provided delivery address, postcode, date, or contact details
+  const hasPostcodeOrTown = /\b(?:[a-z]{1,2}\d[a-z\d]?\s*\d[a-z]{2}|ne\d{1,2}|dh\d{1,2}|sr\d{1,2}|ts\d{1,2}|dl\d{1,2}|ca\d{1,2}|newcastle|gateshead|sunderland|durham|darlington|middlesbrough|stockton|hartlepool|south shields|north shields|blyth|cramlington|hexham|morpeth|consett|chester-le-street)\b/i.test(lower)
+  const hasStreetOrRoad = /\b(?:street|st\b|road|rd\b|avenue|ave\b|lane|close|way|drive|crescent)\b/i.test(lower)
+  const hasDay = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|tomorrow|next week)\b/i.test(lower)
+
+  if (hasPostcodeOrTown || hasStreetOrRoad || (hasDay && (lower.includes('morning') || lower.includes('afternoon') || lower.includes('slot')))) {
+    return "Spot on love, I've got those details noted down for dispatch. Ian from the batch plant will ring you back on this number within 15 minutes to confirm your batch time and slot. Is there anything else you need?"
+  }
+
+  // 6. DELIVERY, DISCHARGE, CHUTES, BARROWING & PUMPS
+  if (lower.includes('barrow') || lower.includes('wheelbarrow') || lower.includes('discharge time') || lower.includes('waiting time')) {
+    return "You get 30 minutes free discharge time included with each load for barrowing love. It's best to have two or three good lads on barrows to get it offloaded before waiting time kicks in."
+  }
+
+  if (lower.includes('pump') || lower.includes('pumping') || lower.includes('boom pump') || lower.includes('line pump')) {
+    return "If access is tight, over 10 metres, or through a house, we can book a ground line pump or boom pump for you so it goes straight in without any barrowing. Would you like a pump quote love?"
+  }
+
+  if (lower.includes('chute') || lower.includes('reach') || lower.includes('access') || lower.includes('truck size') || lower.includes('how big')) {
+    return "The mixer trucks carry up to 8 cubic metres and have chutes on the back reaching about two and a half metres. The truck is about 3 metres wide, so make sure there's clear access into your drive or site."
+  }
+
+  if (lower.includes('delivery') || lower.includes('deliver') || lower.includes('time slot') || lower.includes('morning') || lower.includes('afternoon') || lower.includes('when can you')) {
+    return "We deliver from 7:30am with first load morning slots or afternoon deliveries across the North East and UK-wide. What date were you hoping for love?"
+  }
+
+  // 7. SPEAK TO HUMAN / IAN / MANAGER
   if (
     lower.includes('speak to') ||
     lower.includes('talk to') ||
     lower.includes('human') ||
-    lower.includes('real person') ||
-    (contact && lower.includes(contact.toLowerCase())) ||
-    (contactFirst && lower.includes(contactFirst))
+    lower.includes('person') ||
+    lower.includes('ian') ||
+    lower.includes('manager')
   ) {
-    return `Of course! I will pass your message directly to ${contact} right away. What is the best number and time to reach you on?`
+    return "No trouble at all love! I'll put a message straight through to Ian at dispatch, and he'll give you a buzz back on this number right away. Have a grand day!"
   }
 
-  // 7. "WHAT DO YOU DO?" / "WHAT SERVICES DO YOU OFFER?" / "WHAT DO YOU MAKE?"
-  if (
-    lower === 'what do you do' ||
-    lower.includes('what do you do') ||
-    lower.includes('what do you make') ||
-    lower.includes('what do you sell') ||
-    lower.includes('what services do you offer') ||
-    lower.includes('tell me what you do') ||
-    lower.includes('tell me about your business')
-  ) {
-    return `At ${company}, we specialize in ${servicesSummary}. How can we help with your upcoming project?`
+  // 8. ECHOLIFT / MIXERSHARE / TECH META
+  if (lower.includes('mixershare') || lower.includes('echolift') || lower.includes('ai sales agent') || lower.includes('who are you')) {
+    return "I am the AI Concrete Sales Agent for MixerShare and ready-mix batch plants! I take orders, advise on mixes, calculate cubes, and book deliveries 24/7. How can I help you today love?"
   }
 
-  // 8. SPECIFIC PRODUCT / SERVICE INQUIRY ("DO YOU DO X?")
-  // Extract specific subject nouns from caller question, filtering out company name and generic meta-tokens
-  const genericNouns = new Set([
-    'services', 'service', 'products', 'product', 'work', 'works', 'business',
-    'company', 'things', 'stuff', 'quote', 'quotes', 'cost', 'costs', 'price',
-    'prices', 'appointment', 'appointments', 'times', 'dates', 'help', 'call',
-    'calls', 'someone', 'people', 'team', 'tell', 'about', 'need', 'want',
-    'doing', 'offer', 'provide', 'make', 'makes', 'sell', 'sells',
-    'polished', 'commercial', 'residential', 'domestic', 'bespoke', 'custom', 'luxury',
-    // Common material / medium modifiers
-    'concrete', 'wooden', 'timber', 'metal', 'steel', 'glass', 'stone', 'marble', 'granite',
-    'acrylic', 'plastic', 'ceramic', 'leather', 'fabric'
-  ])
-  company.toLowerCase().split(/[^a-z0-9]+/).forEach((w) => {
-    if (w.length > 2) genericNouns.add(w)
-  })
-
-  const queryNouns = lower
-    .replace(/[^a-z0-9 ]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 3 && !genericNouns.has(w) && !['what', 'when', 'where', 'which', 'have', 'with', 'from', 'your', 'some', 'they', 'their', 'could', 'would'].includes(w))
-
-  let matchedItem: string | null = null
-  for (const noun of queryNouns) {
-    const singular = noun.replace(/s$/, '')
-    for (const item of services) {
-      const itemLower = item.toLowerCase()
-      // Skip if item is just the whole company name
-      if (itemLower === company.toLowerCase()) continue
-      const pattern = new RegExp('\\b' + (singular.length > 3 ? singular : noun) + '(?:s|es|ing)?\\b', 'i')
-      if (pattern.test(itemLower)) {
-        matchedItem = item
-        break
-      }
-    }
-    if (matchedItem) break
-  }
-
-  if (matchedItem) {
-    return `Yes! At ${company} we specialize in ${matchedItem.toLowerCase()}. Would you like to get a quote or discuss options with ${contact}?`
-  }
-
-  // 9. CHECK SCRAPED PARAGRAPHS FOR FACTUAL ANSWERS ONLY IF SPECIFIC NOUN MATCHES
-  if (factsheet.paragraphs && factsheet.paragraphs.length && queryNouns.length > 0) {
-    for (const p of factsheet.paragraphs) {
-      const matches = queryNouns.filter((w) => new RegExp('\\b' + w + '\\b', 'i').test(p)).length
-      if (matches >= 2) {
-        const sentence = p.split(/(?<=[.!?])\s+/)[0]
-        return `At ${company}, ${sentence}. Would you like me to have ${contact} follow up with full details?`
-      }
-    }
-  }
-
-  // 10. GROUNDED RECEPTIONIST RESPONSE (Never claims to do things not on website!)
-  return `At ${company}, we specialize primarily in ${servicesSummary}. If you need ${queryNouns[0] || 'that'}, I would be happy to take your details and have ${contact} call you back today. Would you like me to arrange that?`
+  // 9. DEFAULT HELPFUL READY-MIX REPLY
+  return "We supply all grades of ready-mix concrete, floor screed, and truck mixer deliveries across the North East and UK-wide via mixershare.co.uk. How can I help with your project today love?"
 }
 
 export default async (req: Request) => {
   try {
     const url = new URL(req.url)
+    const isReplyStep = url.searchParams.get('step') === 'reply'
     const prospectIdRaw = url.searchParams.get('prospectId')
     const prospectId = prospectIdRaw ? Number.parseInt(prospectIdRaw, 10) : null
 
@@ -308,74 +238,31 @@ export default async (req: Request) => {
     }
 
     userSpeech = userSpeech.trim()
-    console.log(`🎤 Twilio Speech Input for prospect ${prospectId}: "${userSpeech}"`)
+    console.log(`🎤 Twilio Speech Input (step=${isReplyStep ? 'reply' : 'init'}, prospectId=${prospectId}): "${userSpeech}"`)
 
-    let company = 'Concreet'
-    let contact = 'Ian'
-    let facts = JSON.stringify({
-      company: 'Concreet',
-      contact: 'Ian',
-      website: 'https://concreet.co.uk',
-      title: 'Concreet - Bespoke Microcement & Architectural Concrete',
-      metaDesc: 'Handcrafted concrete homeware, furniture, and seamless microcement kitchen worktops in the UK.',
-      productsAndServices: [
-        'microcement worktop resurfacing',
-        'kitchen island microcement',
-        'seamless bathroom wall microcement',
-        'bespoke concrete coffee tables',
-        'concrete dining tables',
-        'concrete candles and diffusers',
-        'fluted concrete bowls and trays',
-        'waterproof polyurethane sealing',
-        'free kitchen worktop estimates'
-      ],
-      paragraphs: [
-        'Concreet specialises in hand-trowelled microcement worktops applied directly over existing laminate, timber, or tile surfaces with zero demolition and a fast 3-day turnaround.',
-        'All microcement surfaces are sealed with 3 coats of heavy-duty matte or satin polyurethane, making them 100% waterproof and heat-resistant.',
-        'Ian has over 30 years of hands-on concrete, polishing, and surface finishing experience in the UK.'
-      ],
-      locations: ['North East England', 'Newcastle', 'Durham', 'Sunderland', 'Middlesbrough', 'Yorkshire', 'UK Wide Delivery']
-    })
-    let website = 'https://concreet.co.uk'
+    let spokenText = ''
 
-    if (prospectId) {
-      try {
-        const prospect = await findProspect(prospectId)
-        if (prospect) {
-          company = prospect.business_name || company
-          contact = prospect.contact_person || contact
-          facts = prospect.pain_points || facts
-          website = prospect.website || website
-        }
-      } catch (err) {
-        console.error('Error loading prospect for speech reply:', err)
-      }
+    // CASE 1: Initial call arrival (no speech result yet & not a reply turn)
+    if (!isReplyStep && (!userSpeech || userSpeech.length === 0)) {
+      spokenText = "Hello love! Thanks for calling the concrete order desk. How can I help you with your concrete mix, quantity or delivery today?"
+    }
+    // CASE 2: Caller remained silent on a reply turn
+    else if (isReplyStep && (!userSpeech || userSpeech.length === 0)) {
+      spokenText = "Are you still there love? I'm here to help with your concrete mix, quantity or delivery quote whenever you're ready."
+    }
+    // CASE 3: Caller spoke! Answer using Ready-Mix Concrete Order Desk Engine
+    else {
+      spokenText = answerConcreteOrderQuery(userSpeech)
     }
 
-    // Parse the prospect's factual knowledge base
-    const factsheet = parseFactsheet(company, contact, website, facts)
-
-    let aiReply: string | null = null
-
-    // 0. Handle Silence / Empty Speech explicitly
-    if (!userSpeech || userSpeech.trim().length === 0) {
-      aiReply = "Are you still there love? How can I help you with your concrete mix, quantity or delivery quote today?"
-    } else {
-      // 1. Try Claude 3.5 Haiku if API key is present
-      aiReply = await generateAiAnswer(userSpeech, factsheet)
-
-      // 2. Grounded Universal Knowledge Engine (runs if AI took >1100ms or is offline)
-      if (!aiReply) {
-        aiReply = answerGrounded(userSpeech, factsheet)
-      }
-    }
-
-    const audioUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(aiReply)}`
+    const audioUrl = makeAudioUrl(spokenText)
     const followupText = "Are you still there love? I'm here to help with your concrete mix, quantity or delivery quote whenever you're ready."
-    const followupAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(followupText)}`
+    const followupAudio = makeAudioUrl(followupText)
     const goodbyeText = "No trouble at all love. If you need any concrete advice or want to book an order later, give us a ring back on 0191 406 2323 or visit mixershare.co.uk. Have a grand day!"
-    const goodbyeAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(goodbyeText)}`
-    const pIdStr = prospectId ? String(prospectId) : ''
+    const goodbyeAudio = makeAudioUrl(goodbyeText)
+
+    const pIdParam = prospectId ? `&prospectId=${prospectId}` : ''
+    const actionUrl = `https://www.echoliftai.co.uk/api/instant-ai-voice-reply?step=reply${pIdParam}`
 
     // Pre-warm the synthesized audio in background so Twilio receives it instantly
     fetch(audioUrl).catch((e) => console.warn('Prewarm reply audio warning:', e))
@@ -383,10 +270,10 @@ export default async (req: Request) => {
     // Strict 4-second maximum limit for silence during speech and pauses
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4" hints="concrete, mix, cubes, metres, delivery, price, quote, C20, C25, C30, gen 1, gen 3, screed, pump, chute, barrow">
+  <Gather input="speech" action="${actionUrl}" speechTimeout="3" timeout="4" hints="concrete, mix, cubes, metres, delivery, price, quote, C20, C25, C30, gen 1, gen 3, screed, pump, chute, barrow">
     <Play>${audioUrl}</Play>
   </Gather>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?prospectId=${pIdStr}" speechTimeout="3" timeout="4">
+  <Gather input="speech" action="${actionUrl}" speechTimeout="3" timeout="4">
     <Play>${followupAudio}</Play>
   </Gather>
   <Play>${goodbyeAudio}</Play>
@@ -400,11 +287,11 @@ export default async (req: Request) => {
     })
   } catch (err: any) {
     console.error('Unhandled instant-ai-voice-reply exception:', err)
-    const fallbackText = 'Thank you for calling our concrete order desk. If you need a quote or want to book, please give us a ring on 0191 406 2323. Have a grand day!'
-    const fallbackAudio = `https://www.echoliftai.co.uk/api/instant-ai-voice-stream?text=${encodeURIComponent(fallbackText)}`
+    const fallbackText = "Hello love! Thanks for calling the concrete order desk. If you need a quote or want to book, please give us a ring back on 0191 406 2323 or visit mixershare.co.uk. Have a grand day!"
+    const fallbackAudio = makeAudioUrl(fallbackText)
     const fallbackTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply" speechTimeout="3" timeout="4">
+  <Gather input="speech" action="https://www.echoliftai.co.uk/api/instant-ai-voice-reply?step=reply" speechTimeout="3" timeout="4">
     <Play>${fallbackAudio}</Play>
   </Gather>
   <Hangup/>
